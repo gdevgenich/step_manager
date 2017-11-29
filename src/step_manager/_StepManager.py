@@ -1,7 +1,10 @@
+#
+
 from __future__ import absolute_import
 
+from logging import getLogger
+
 from reactor import Reactor
-import logging
 
 from ._Step import Step
 
@@ -9,7 +12,7 @@ from ._Step import Step
 class StepManager(object):
 
     def __init__(self, name):
-        self.__log = logging.getLogger("step_manager")
+        self.__log = getLogger("step_manager")
         self.name = name
         self._steps = list()
         self._backlog = list()
