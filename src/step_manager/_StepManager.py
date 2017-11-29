@@ -146,7 +146,7 @@ class StepManager(object):
             step_number = ".".join(order)
             step_name = s._name
             step_action = s.action
-            step_expecteds = "TODO"
+            step_expecteds = s._expected
             step_duration = s.duration
             print("{padding} {step_number}. {step_name} (action={step_action!r} expecteds={step_expecteds!r} duration={step_duration!r})".format(padding=padding, step_number=step_number, step_name=step_name, step_action=step_action, step_expecteds=step_expecteds, step_duration=step_duration))
             if s.sm:
