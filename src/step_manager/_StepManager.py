@@ -13,7 +13,7 @@ class StepManager(object):
 
     def __init__(self, name):
         self.__log = getLogger("step_manager")
-        self.name = name
+        self._name = name
         self._steps = list()
         self._backlog = list()
         self._completed = False
@@ -94,7 +94,7 @@ class StepManager(object):
 
     def collect_warnings(self):
         if self.__warnings is None:
-            self.__warnings = {"name": self.name, "warnings":[]}
+            self.__warnings = {"name": self._name, "warnings":[]}
             for step in self._steps:
                 if isinstance(step.action, StepManager):
                     step_warnings = step.action.collect_warnings()
