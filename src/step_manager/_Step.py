@@ -11,7 +11,7 @@ class Step(object):
         self._action = action
         self._sm = None
         self._duration = duration
-        self._expected = list()
+        self._expected = dict()
         self.warnings = {"name": self.name, "warnings": []}
 
     @property
@@ -30,13 +30,13 @@ class Step(object):
     def sm(self):
         return self._sm
 
-    def register_substep(self, name, sm):
+    def add_substep(self, name, sm):
         if self._sm is None:
             self._sm = self._owner.createStepManager(name)
-        self._sm.register_step(name=name, action=sm, duration=0.0)
+        self._sm.add_step(name=name, action=sm, duration=0.0)
 
-    def register_expected(self, expected):
-        self._expected.append(expected)
+    def add_expected(self, expected, **kwargs):
+        self._expected[expected] = kwargs
         return self
 
     def register_warning(self, msg):
@@ -52,7 +52,7 @@ class Step(object):
     def run(self):
         if self._action is not None:
             self._action()
-        for exp in self._expected:
-            message = exp()
+        for exp, kwargs in self._expected.items():
+            message = exp(**kwargs)
             if message is not None:
                 self.register_warning(message)

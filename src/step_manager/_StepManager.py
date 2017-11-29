@@ -11,9 +11,6 @@ class StepManager(object):
     def __init__(self, name):
         self.__log = logging.getLogger("step_manager")
         self.name = name
-        if len(self.__log.handlers) == 0:
-            self.__log.addHandler(logging.StreamHandler())
-            self.__log.setLevel(logging.INFO)
         self._steps = list()
         self._backlog = list()
         self._completed = False
@@ -49,22 +46,27 @@ class StepManager(object):
                 return step
         return None
 
-    def register_substep(self, step_name, substep_name, sm):
+    def add_substep(self, step_name, substep_name, sm):
         step_index = self.find_step_index(name=step_name)
         if step_index == -1:
             raise ValueError("No step with name {step_name} registered in step manager".format(step_name=step_name))
-        self._steps[step_index].register_substep(substep_name, sm)
+        self._steps[step_index].add_substep(substep_name, sm)
 
     @staticmethod
     def createStepManager(name):
         return StepManager(name=name)
 
-    def register_step(self, name, action, duration=0.0):
+    def add_step(self, name, action, duration=0.0):
         step = Step(owner=self, name=name, action=action, duration=duration)
         self._steps.append(step)
         return step
 
-    def insert_step_after(self, after_step, step):
+    def remove_step(self, step_name):
+        step = self.find_step(step_name)
+        if step is None:
+            raise ValueError("No such step registered in system")
+
+    def add_step_after(self, after_step, step):
         after_step_index = self.find_step_index(after_step)
         if after_step_index == -1:
             raise ValueError("No step with name {after_step} registered in step manager".format(after_step=after_step))
