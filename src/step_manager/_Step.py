@@ -30,11 +30,11 @@ class Step(object):
     def sm(self):
         return self._sm
 
-    def add_substep(self, name, action=None):
+    def add_substep(self, name, action=None, duration=0.0):
         if self._sm is None:
             self._sm = self._owner.createStepManager(name)
-        self._sm.add_step(name=name, action=action, duration=0.0)
-        return self._sm
+        step = self._sm.add_step(name=name, action=action, duration=duration)
+        return step
 
     def add_expected(self, expected, **kwargs):
         self._expected[expected] = kwargs

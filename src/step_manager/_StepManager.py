@@ -3,6 +3,7 @@
 from __future__ import absolute_import
 
 from logging import getLogger
+from copy import copy
 
 from reactor import Reactor
 
@@ -132,3 +133,18 @@ class StepManager(object):
         else:
             self.__log.info("Embedded Step Manager finished work")
             reactor.call_later(self._duration, self._exec_after)
+
+    def dump(self, level=0, base_order=None):
+
+        if not base_order:
+            base_order = []
+
+        for number, s in enumerate(self._steps):
+            padding = " + " * level
+            order = copy(base_order)
+            order.append(str(number+1))
+            step_number = ".".join(order)
+            step_name = s._name
+            print("{padding} {step_number}. {step_name}".format(padding=padding, step_number=step_number, step_name=step_name))
+            if s.sm:
+                s.sm.dump(level=level+1, base_order=order)
