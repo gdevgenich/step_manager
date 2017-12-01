@@ -12,14 +12,13 @@ from ._Step import Step
 
 class StepManager(object):
 
-    def __init__(self, name):
+    def __init__(self):
         self.__log = getLogger("step_manager")
-        self._name = name
         self._steps = list()
         self._backlog = list()
         self._completed = False
         self._exec_after = None
-        self.__warnings = None
+        self.__warnings = list()
         self._duration = 0.0
 
     @property
@@ -48,7 +47,7 @@ class StepManager(object):
         for step in self._steps:
             if step.name == name:
                 return step
-        return None
+        raise Exception("No step with name {name} found".format(name=name))
 
     def add_substep(self, step_name, substep_name, sm):
         step_index = self.find_step_index(name=step_name)
@@ -57,10 +56,10 @@ class StepManager(object):
         self._steps[step_index].add_substep(substep_name, sm)
 
     @staticmethod
-    def createStepManager(name):
-        return StepManager(name=name)
+    def createStepManager():
+        return StepManager()
 
-    def add_step(self, name, action, duration=0.0):
+    def add_step(self, name, action=None, duration=0.0):
         step = Step(owner=self, name=name, action=action, duration=duration)
         self._steps.append(step)
         return step
@@ -86,24 +85,31 @@ class StepManager(object):
         reactor.call_later(0.0, self._iteration)
 
     def has_warnings(self):
-        if self.__warnings is None:
+        if len(self.__warnings) == 0:
             self.collect_warnings()
-        if len(self.__warnings["warnings"]) > 0:
+        if len(self.__warnings) > 0:
             return True
         else:
             return False
 
     def collect_warnings(self):
-        if self.__warnings is None:
-            self.__warnings = {"name": self._name, "warnings":[]}
-            for step in self._steps:
-                if isinstance(step.action, StepManager):
-                    step_warnings = step.action.collect_warnings()
-                else:
-                    step_warnings = step.collect_warnings()
-                if len(step_warnings["warnings"]) > 0:
-                    self.__warnings["warnings"].append(step_warnings)
+        if len(self.__warnings) > 0:
+            return self.__warnings
+        for step in self._steps:
+            if isinstance(step.action, StepManager):
+                step_warnings = step.action.collect_warnings()
+            else:
+                step_warnings = step.collect_warnings()
+            for warning in step_warnings:
+                self.__warnings.append(warning)
         return self.__warnings
+
+    def get_warnings(self):
+        self.collect_warnings()
+        warning_string = ""
+        for warning in self.__warnings:
+            warning_string+="\n"+warning
+        return warning_string
 
     def _iteration(self, reactor):
         if len(self._backlog) == 0:

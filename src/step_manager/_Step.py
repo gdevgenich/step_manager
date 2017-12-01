@@ -12,7 +12,7 @@ class Step(object):
         self._sm = None
         self._duration = duration
         self._expected = dict()
-        self.warnings = {"name": self.name, "warnings": []}
+        self.warnings = list()
 
     @property
     def name(self):
@@ -32,7 +32,7 @@ class Step(object):
 
     def add_substep(self, name, action=None, duration=0.0):
         if self._sm is None:
-            self._sm = self._owner.createStepManager(name)
+            self._sm = self._owner.createStepManager()
         step = self._sm.add_step(name=name, action=action, duration=duration)
         return step
 
@@ -41,19 +41,19 @@ class Step(object):
         return self
 
     def register_warning(self, msg):
-        self.warnings["warnings"].append(msg)
+        self.warnings.append("{step}: {msg}".format(step=self.name, msg=msg))
 
     def collect_warnings(self):
         if self.sm is not None:
             sm_warnings = self.sm.collect_warnings()
-            if len(sm_warnings["warnings"]) > 0:
-                self.warnings["warnings"].append(sm_warnings)
+            for msg in sm_warnings:
+                self.register_warning(msg=msg)
         return self.warnings
 
     def run(self):
         if self._action is not None:
             self._action()
         for exp, kwargs in self._expected.items():
-            message = exp(**kwargs)
-            if message is not None:
+            res, message = exp(**kwargs)
+            if not res:
                 self.register_warning(message)
