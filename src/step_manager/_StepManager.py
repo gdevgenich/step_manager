@@ -59,8 +59,8 @@ class StepManager(object):
     def createStepManager():
         return StepManager()
 
-    def add_step(self, name, action=None, duration=0.0):
-        step = Step(owner=self, name=name, action=action, duration=duration)
+    def add_step(self, name, action=None, duration=0.0, **kwargs):
+        step = Step(owner=self, name=name, action=action, duration=duration, **kwargs)
         self._steps.append(step)
         return step
 

@@ -5,10 +5,11 @@ class Step(object):
     @ivar StepManager _owner:
     """
 
-    def __init__(self, owner, name, action, duration=0.0):
+    def __init__(self, owner, name, action, duration=0.0, **kwargs):
         self._owner = owner
         self._name = name
         self._action = action
+        self._kwargs = kwargs
         self._sm = None
         self._duration = duration
         self._expected = dict()
@@ -30,10 +31,10 @@ class Step(object):
     def sm(self):
         return self._sm
 
-    def add_substep(self, name, action=None, duration=0.0):
+    def add_substep(self, name, action=None, duration=0.0, **kwargs):
         if self._sm is None:
             self._sm = self._owner.createStepManager()
-        step = self._sm.add_step(name=name, action=action, duration=duration)
+        step = self._sm.add_step(name=name, action=action, duration=duration, **kwargs)
         return step
 
     def add_expected(self, expected, **kwargs):
@@ -52,7 +53,7 @@ class Step(object):
 
     def run(self):
         if self._action is not None:
-            self._action()
+            self._action(**self._kwargs)
         for exp, kwargs in self._expected.items():
             res, message = exp(**kwargs)
             if not res:
