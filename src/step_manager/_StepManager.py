@@ -69,10 +69,11 @@ class StepManager(object):
         if step is None:
             raise ValueError("No such step registered in system")
 
-    def add_step_after(self, after_step, step):
+    def add_step_after(self, after_step, name, action=None, duration=0.0, **kwargs):
         after_step_index = self.find_step_index(after_step)
         if after_step_index == -1:
             raise ValueError("No step with name {after_step} registered in step manager".format(after_step=after_step))
+        step = Step(self, name, action, duration, **kwargs)
         self._steps.insert(after_step_index, step)
 
     def run(self, timeout=180):
