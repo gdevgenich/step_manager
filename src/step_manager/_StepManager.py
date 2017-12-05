@@ -2,7 +2,7 @@
 
 from __future__ import absolute_import
 
-from logging import getLogger
+import logging
 from copy import copy
 
 from reactor import Reactor
@@ -13,7 +13,9 @@ from ._Step import Step
 class StepManager(object):
 
     def __init__(self):
-        self.__log = getLogger("step_manager")
+        self.__log = logging.getLogger("step_manager")
+        if not self.__log.handlers:
+            self.__log.addHandler(logging.StreamHandler())
         self._steps = list()
         self._backlog = list()
         self._completed = False
@@ -74,7 +76,7 @@ class StepManager(object):
         if after_step_index == -1:
             raise ValueError("No step with name {after_step} registered in step manager".format(after_step=after_step))
         step = Step(self, name, action, duration, **kwargs)
-        self._steps.insert(after_step_index, step)
+        self._steps.insert(after_step_index+1, step)
 
     def run(self, timeout=180):
         react = Reactor()
@@ -118,14 +120,14 @@ class StepManager(object):
         else:
             step = self._backlog.pop(0)
             if isinstance(step.action, StepManager):
-                self.__log.info("Step manager  from step with name '{name}' started".format(name=step.name))
+                self.__log.info("Step manager  from step with name '{name}' started at reactor time {time}".format(name=step.name, time=reactor.seconds()))
                 step.action.set_exec_after(self._iteration)
                 step.action.start(reactor)
             else:
-                self.__log.info("Step with name '{name}' started".format(name=step.name))
+                self.__log.info("Step with name '{name}' started at reactor time {time}".format(name=step.name, time=reactor.seconds()))
                 step.run()
                 if step.sm is not None:
-                    self.__log.info("Step manager from step with name '{name}' started".format(name=step.name))
+                    self.__log.info("Step manager from step with name '{name}' started at reactor time {time}".format(name=step.name, time=reactor.seconds()))
                     step.sm.set_exec_after(self._iteration)
                     step.sm.set_duration(step.duration)
                     reactor.call_later(0.0, step.sm.start)
@@ -135,10 +137,10 @@ class StepManager(object):
     def stop(self, reactor):
         self._completed = True
         if self._exec_after is None:
-            self.__log.info("Main Step Manager finished work")
+            self.__log.info("Main Step Manager finished work at reactor time {time}".format(time=reactor.seconds()))
             reactor.stop()
         else:
-            self.__log.info("Embedded Step Manager finished work")
+            self.__log.info("Embedded Step Manager finished work at reactor time {time}".format(time=reactor.seconds()))
             reactor.call_later(self._duration, self._exec_after)
 
     def dump(self, level=0, base_order=None):
