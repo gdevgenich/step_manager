@@ -67,9 +67,7 @@ class StepManager(object):
         return step
 
     def remove_step(self, step_name):
-        step = self.find_step(step_name)
-        if step is None:
-            raise ValueError("No such step registered in system")
+        self._steps.remove(self.find_step(step_name))
 
     def add_step_after(self, after_step, name, action=None, duration=0.0, **kwargs):
         after_step_index = self.find_step_index(after_step)
@@ -88,21 +86,16 @@ class StepManager(object):
         reactor.call_later(0.0, self._iteration)
 
     def has_warnings(self):
-        if len(self.__warnings) == 0:
-            self.collect_warnings()
+        self.collect_warnings()
         if len(self.__warnings) > 0:
             return True
         else:
             return False
 
     def collect_warnings(self):
-        if len(self.__warnings) > 0:
-            return self.__warnings
+        self.__warnings = list()
         for step in self._steps:
-            if isinstance(step.action, StepManager):
-                step_warnings = step.action.collect_warnings()
-            else:
-                step_warnings = step.collect_warnings()
+            step_warnings = step.collect_warnings()
             for warning in step_warnings:
                 self.__warnings.append(warning)
         return self.__warnings
@@ -119,20 +112,15 @@ class StepManager(object):
             self.stop(reactor)
         else:
             step = self._backlog.pop(0)
-            if isinstance(step.action, StepManager):
-                self.__log.info("Step manager  from step with name '{name}' started at reactor time {time}".format(name=step.name, time=reactor.seconds()))
-                step.action.set_exec_after(self._iteration)
-                step.action.start(reactor)
+            self.__log.info("Step with name '{name}' started at reactor time {time}".format(name=step.name, time=reactor.seconds()))
+            step.run()
+            if step.sm is not None:
+                self.__log.info("Step manager from step with name '{name}' started at reactor time {time}".format(name=step.name, time=reactor.seconds()))
+                step.sm.set_exec_after(self._iteration)
+                step.sm.set_duration(step.duration)
+                reactor.call_later(0.0, step.sm.start)
             else:
-                self.__log.info("Step with name '{name}' started at reactor time {time}".format(name=step.name, time=reactor.seconds()))
-                step.run()
-                if step.sm is not None:
-                    self.__log.info("Step manager from step with name '{name}' started at reactor time {time}".format(name=step.name, time=reactor.seconds()))
-                    step.sm.set_exec_after(self._iteration)
-                    step.sm.set_duration(step.duration)
-                    reactor.call_later(0.0, step.sm.start)
-                else:
-                    reactor.call_later(step.duration, self._iteration)
+                reactor.call_later(step.duration, self._iteration)
 
     def stop(self, reactor):
         self._completed = True
