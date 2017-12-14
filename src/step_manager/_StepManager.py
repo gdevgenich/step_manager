@@ -93,7 +93,8 @@ class StepManager(object):
             return False
 
     def collect_warnings(self):
-        self.__warnings = list()
+        if len(self.__warnings) > 0:
+            return self.__warnings
         for step in self._steps:
             step_warnings = step.collect_warnings()
             for warning in step_warnings:
@@ -113,9 +114,11 @@ class StepManager(object):
         else:
             step = self._backlog.pop(0)
             self.__log.info("Step with name '{name}' started at reactor time {time}".format(name=step.name, time=reactor.seconds()))
+            step.set_start_time(reactor.seconds())
             step.run()
+            step.set_stop_time(reactor.seconds())
             if step.sm is not None:
-                self.__log.info("Step manager from step with name '{name}' started at reactor time {time}".format(name=step.name, time=reactor.seconds()))
+                self.__log.info("Substeps from step with name '{name}' started at reactor time {time}".format(name=step.name, time=reactor.seconds()))
                 step.sm.set_exec_after(self._iteration)
                 step.sm.set_duration(step.duration)
                 reactor.call_later(0.0, step.sm.start)
@@ -128,7 +131,7 @@ class StepManager(object):
             self.__log.info("Main Step Manager finished work at reactor time {time}".format(time=reactor.seconds()))
             reactor.stop()
         else:
-            self.__log.info("Embedded Step Manager finished work at reactor time {time}".format(time=reactor.seconds()))
+            self.__log.info("Substeps sequence finished work at reactor time {time}".format(time=reactor.seconds()))
             reactor.call_later(self._duration, self._exec_after)
 
     def dump(self, level=0, base_order=None):

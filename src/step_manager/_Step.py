@@ -14,6 +14,8 @@ class Step(object):
         self._duration = duration
         self._expected = dict()
         self.warnings = list()
+        self.start_time = None
+        self.end_time = None
 
     @property
     def name(self):
@@ -31,6 +33,18 @@ class Step(object):
     def sm(self):
         return self._sm
 
+    def set_start_time(self, start_time):
+        self.start_time = start_time
+
+    def set_stop_time(self, stop_time):
+        self.stop_time = stop_time
+
+    def get_start_time(self):
+        return self.start_time
+
+    def get_stop_time(self):
+        return self.stop_time
+
     def add_substep(self, name, action=None, duration=0.0, **kwargs):
         if self._sm is None:
             self._sm = self._owner.createStepManager()
@@ -45,6 +59,8 @@ class Step(object):
         self.warnings.append("{step}: {msg}".format(step=self.name, msg=msg))
 
     def collect_warnings(self):
+        if len(self.warnings) > 0:
+            return self.warnings
         if self.sm is not None:
             sm_warnings = self.sm.collect_warnings()
             for msg in sm_warnings:
