@@ -51,11 +51,9 @@ class StepManager(object):
                 return step
         raise Exception("No step with name {name} found".format(name=name))
 
-    def add_substep(self, step_name, substep_name, sm):
-        step_index = self.find_step_index(name=step_name)
-        if step_index == -1:
-            raise ValueError("No step with name {step_name} registered in step manager".format(step_name=step_name))
-        self._steps[step_index].add_substep(substep_name, sm)
+    def add_substep(self, step_name, substep_name, action=None, duration=0.0, **kwargs):
+        step = self.find_step(name=step_name)
+        step.add_substep(name=substep_name, action=action, duration=duration, **kwargs)
 
     @staticmethod
     def createStepManager():
