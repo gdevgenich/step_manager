@@ -87,10 +87,10 @@ class Step(object):
         try:
             if self._action is not None:
                 self._action(**self._kwargs)
-                self._state = State.PASS
+            self._state = State.PASS
         except:
-                self._state = State.FAIL
-                raise
+            self._state = State.FAIL
+            raise
 
         # Step 2. Collect expected messages
         for kwargs in self._expected:
