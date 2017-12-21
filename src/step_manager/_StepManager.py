@@ -73,6 +73,7 @@ class StepManager(object):
             raise ValueError("No step with name {after_step} registered in step manager".format(after_step=after_step))
         step = Step(self, name, action, duration, **kwargs)
         self._steps.insert(after_step_index+1, step)
+        return step
 
     def run(self, timeout=180):
         react = Reactor()
@@ -101,6 +102,8 @@ class StepManager(object):
 
     def get_warnings(self):
         self.collect_warnings()
+        if not self._completed:
+            self.__warnings.append("Step manager wasn't completed")
         warning_string = ""
         for warning in self.__warnings:
             warning_string+="\n"+warning

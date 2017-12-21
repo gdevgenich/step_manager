@@ -12,7 +12,7 @@ class Step(object):
         self._kwargs = kwargs
         self._sm = None
         self._duration = duration
-        self._expected = dict()
+        self._expected = list()
         self.warnings = list()
         self.start_time = None
         self.end_time = None
@@ -52,7 +52,8 @@ class Step(object):
         return step
 
     def add_expected(self, expected, **kwargs):
-        self._expected[expected] = kwargs
+        kwargs["__method__"] = expected
+        self._expected.append(kwargs)
         return self
 
     def register_warning(self, msg):
@@ -70,7 +71,8 @@ class Step(object):
     def run(self):
         if self._action is not None:
             self._action(**self._kwargs)
-        for exp, kwargs in self._expected.items():
-            res, message = exp(**kwargs)
+        for kwargs in self._expected:
+            method = kwargs.pop("__method__")
+            res, message = method(**kwargs)
             if not res:
                 self.register_warning(message)
