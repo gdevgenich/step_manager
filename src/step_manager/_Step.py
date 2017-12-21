@@ -82,13 +82,17 @@ class Step(object):
         return self.warnings
 
     def run(self):
-        if self._action is not None:
-            try:
+
+        # Step 1. Execute action in critical section
+        try:
+            if self._action is not None:
                 self._action(**self._kwargs)
                 self._state = State.PASS
-            except:
+        except:
                 self._state = State.FAIL
                 raise
+
+        # Step 2. Collect expected messages
         for kwargs in self._expected:
             method = kwargs.pop("__method__")
             res, message = method(**kwargs)
