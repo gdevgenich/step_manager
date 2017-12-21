@@ -154,7 +154,7 @@ class StepManager(object):
             step_expecteds = s._expected
             step_duration = s.duration
             step_state = s.state
-            msg = "{padding} {step_number}. {step_name} {state} (action={step_action!r} expecteds={step_expecteds!r} duration={step_duration!r})\n".format(padding=padding, step_number=step_number, step_name=step_name, state=step_state step_action=step_action, step_expecteds=step_expecteds, step_duration=step_duration)
+            msg = "{padding} {step_number}. {step_name} {state} (action={step_action!r} expecteds={step_expecteds!r} duration={step_duration!r})\n".format(padding=padding, step_number=step_number, step_name=step_name, state=step_state, step_action=step_action, step_expecteds=step_expecteds, step_duration=step_duration)
             stream.write(msg)
             if s.sm:
                 s.sm.dump(level=level+1, base_order=order, stream=stream)
