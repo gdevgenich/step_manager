@@ -1,4 +1,12 @@
+#
+
 from __future__ import absolute_import
+
+class State(object):
+    UNKNOWN = "unknown"
+    PASS = "passed"
+    FAIL = "failed"
+
 
 class Step(object):
     """
@@ -16,6 +24,7 @@ class Step(object):
         self.warnings = list()
         self.start_time = None
         self.end_time = None
+        self._state = State.UNKNOWN
 
     @property
     def name(self):
@@ -70,7 +79,12 @@ class Step(object):
 
     def run(self):
         if self._action is not None:
-            self._action(**self._kwargs)
+            try:
+                self._action(**self._kwargs)
+                self._state = State.PASS
+            except:
+                self._state = State.FAIL
+                raise
         for kwargs in self._expected:
             method = kwargs.pop("__method__")
             res, message = method(**kwargs)

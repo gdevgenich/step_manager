@@ -5,6 +5,8 @@ from __future__ import absolute_import
 from pbxut import PBXTestCase
 from abc import ABCMeta, abstractmethod
 
+from six import StringIO
+
 from ._StepManager import StepManager
 
 
@@ -15,7 +17,9 @@ class StepTestCase(PBXTestCase):
 
 
     def prepareReport(self, sm):
-        result = "Huh... This is report."
+        stream = StringIO()
+        sm.dump(stream=stream) # TODO - more color ...
+        result = stream.getvalue()
         return result
 
 
@@ -24,6 +28,7 @@ class StepTestCase(PBXTestCase):
         if actual != True:
             err = AssertionError(msg)
             err.content = self.prepareReport(self.__sm__)
+            raise err
 
 
     @abstractmethod

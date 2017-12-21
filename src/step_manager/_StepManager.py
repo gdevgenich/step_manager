@@ -2,7 +2,8 @@
 
 from __future__ import absolute_import
 
-import logging
+from sys import stdout
+from logging import getLogger
 from copy import copy
 
 from reactor import Reactor
@@ -13,9 +14,7 @@ from ._Step import Step
 class StepManager(object):
 
     def __init__(self):
-        self.__log = logging.getLogger("step_manager")
-        if not self.__log.handlers:
-            self.__log.addHandler(logging.StreamHandler())
+        self.__log = getLogger("step_manager")
         self._steps = list()
         self._backlog = list()
         self._completed = False
@@ -126,6 +125,7 @@ class StepManager(object):
             else:
                 reactor.call_later(step.duration, self._iteration)
 
+
     def stop(self, reactor):
         self._completed = True
         if self._exec_after is None:
@@ -135,7 +135,11 @@ class StepManager(object):
             self.__log.info("Substeps sequence finished work at reactor time {time}".format(time=reactor.seconds()))
             reactor.call_later(self._duration, self._exec_after)
 
-    def dump(self, level=0, base_order=None):
+
+    def dump(self, level=0, base_order=None, stream=None):
+
+        if not stream:
+            stream = stdout
 
         if not base_order:
             base_order = []
@@ -149,6 +153,8 @@ class StepManager(object):
             step_action = s.action
             step_expecteds = s._expected
             step_duration = s.duration
-            print("{padding} {step_number}. {step_name} (action={step_action!r} expecteds={step_expecteds!r} duration={step_duration!r})".format(padding=padding, step_number=step_number, step_name=step_name, step_action=step_action, step_expecteds=step_expecteds, step_duration=step_duration))
+            step_state = s.state
+            msg = "{padding} {step_number}. {step_name} {state} (action={step_action!r} expecteds={step_expecteds!r} duration={step_duration!r})\n".format(padding=padding, step_number=step_number, step_name=step_name, state=step_state step_action=step_action, step_expecteds=step_expecteds, step_duration=step_duration)
+            stream.write(msg)
             if s.sm:
-                s.sm.dump(level=level+1, base_order=order)
+                s.sm.dump(level=level+1, base_order=order, stream=stream)
