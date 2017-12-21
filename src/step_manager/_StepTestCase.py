@@ -25,6 +25,7 @@ class StepTestCase(PBXTestCase):
             err = AssertionError(msg)
             err.content = self.prepareReport(self.__sm__)
 
+
     @abstractmethod
     def initialize(self, sm):
         raise NotImplementedError()
