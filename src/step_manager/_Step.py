@@ -31,6 +31,10 @@ class Step(object):
         return self._name
 
     @property
+    def state(self):
+        return self._state
+
+    @property
     def duration(self):
         return self._duration
 
