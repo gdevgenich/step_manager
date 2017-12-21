@@ -12,8 +12,11 @@ from ._Step import Step
 
 
 class StepManager(object):
+    """
+    @ivar bool careful: Determine careful duration calculation (without except action run)
+    """
 
-    def __init__(self):
+    def __init__(self, careful=True):
         self.__log = getLogger("step_manager")
         self._steps = list()
         self._backlog = list()
@@ -21,6 +24,7 @@ class StepManager(object):
         self._exec_after = None
         self.__warnings = list()
         self._duration = 0.0
+        self._careful = careful
 
     @property
     def completed(self):
@@ -114,16 +118,23 @@ class StepManager(object):
         else:
             step = self._backlog.pop(0)
             self.__log.info("Step with name '{name}' started at reactor time {time}".format(name=step.name, time=reactor.seconds()))
+
             step.set_start_time(reactor.seconds())
             step.run()
             step.set_stop_time(reactor.seconds())
+
+            if self._careful:
+                new_duration = step.duration - step.seconds  # TODO - careful about negative value ...
+            else:
+                new_duration = step.duration
+
             if step.sm is not None:
                 self.__log.info("Substeps from step with name '{name}' started at reactor time {time}".format(name=step.name, time=reactor.seconds()))
                 step.sm.set_exec_after(self._iteration)
                 step.sm.set_duration(step.duration)
                 reactor.call_later(0.0, step.sm.start)
             else:
-                reactor.call_later(step.duration, self._iteration)
+                reactor.call_later(new_duration, self._iteration)
 
 
     def stop(self, reactor):

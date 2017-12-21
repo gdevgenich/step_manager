@@ -6,6 +6,7 @@ class State(object):
     UNKNOWN = "unknown"
     PASS = "passed"
     FAIL = "failed"
+    WARN = "warned"
 
 
 class Step(object):
@@ -33,6 +34,13 @@ class Step(object):
     @property
     def state(self):
         return self._state
+
+    @property
+    def seconds(self):
+        result = 0
+        if all([self.start_time, self.stop_time]):
+            result = self.stop_time - self.start_time
+        return result
 
     @property
     def duration(self):
@@ -64,13 +72,16 @@ class Step(object):
         step = self._sm.add_step(name=name, action=action, duration=duration, **kwargs)
         return step
 
+
     def add_expected(self, expected, **kwargs):
         kwargs["__method__"] = expected
-        self._expected.append(kwargs)
+        self._expected.append(kwargs) # TODO - Why you does not create a class? Do you have any class limitations? Reason mixing two different kind of instances?
         return self
+
 
     def register_warning(self, msg):
         self.warnings.append("{step}: {msg}".format(step=self.name, msg=msg))
+
 
     def collect_warnings(self):
         if len(self.warnings) > 0:
@@ -81,12 +92,14 @@ class Step(object):
                 self.register_warning(msg=msg)
         return self.warnings
 
+
     def run(self):
 
         # Step 1. Execute action in critical section
         try:
-            if self._action is not None:
+            if self._action:
                 self._action(**self._kwargs)
+
             self._state = State.PASS
         except:
             self._state = State.FAIL
@@ -95,6 +108,11 @@ class Step(object):
         # Step 2. Collect expected messages
         for kwargs in self._expected:
             method = kwargs.pop("__method__")
-            res, message = method(**kwargs)
+            try:
+                res, message = method(**kwargs)  # TODO - How about expectations without return now it raise a TypeError... It correct? May be catch and register another warning?
+            except Exception as err:
+                self.register_warning( repr(err) ) # TODO - Do you think about exception inside expectations section ?
+                self._state = State.WARN
+
             if not res:
                 self.register_warning(message)
