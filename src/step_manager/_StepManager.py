@@ -16,7 +16,7 @@ class StepManager(object):
     @ivar bool careful: Determine careful duration calculation (without except action run)
     """
 
-    def __init__(self, careful=True):
+    def __init__(self, careful=False):
         self.__log = getLogger("step_manager")
         self._steps = list()
         self._backlog = list()

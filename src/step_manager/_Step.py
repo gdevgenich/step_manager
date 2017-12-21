@@ -110,9 +110,9 @@ class Step(object):
             method = kwargs.pop("__method__")
             try:
                 res, message = method(**kwargs)  # TODO - How about expectations without return now it raise a TypeError... It correct? May be catch and register another warning?
+                if not res:
+                    self.register_warning(message)
             except Exception as err:
                 self.register_warning( repr(err) ) # TODO - Do you think about exception inside expectations section ?
                 self._state = State.WARN
 
-            if not res:
-                self.register_warning(message)

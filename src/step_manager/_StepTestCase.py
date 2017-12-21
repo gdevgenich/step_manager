@@ -15,6 +15,8 @@ class StepTestCase(PBXTestCase):
     __metaclass__ = ABCMeta
     __sm__ = None
 
+    CAREFUL = True
+
 
     def prepareReport(self, sm):
         stream = StringIO()
@@ -37,6 +39,6 @@ class StepTestCase(PBXTestCase):
 
 
     def runTest(self):
-       self.__sm__ = StepManager()
+       self.__sm__ = StepManager(careful=self.CAREFUL)
        self.initialize(self.__sm__)
        self.__sm__.run()
