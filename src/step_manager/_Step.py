@@ -7,6 +7,7 @@ class State(object):
     PASS = "passed"
     FAIL = "failed"
     WARN = "warned"
+    BROK = "broken"
 
 
 class Step(object):
@@ -109,10 +110,11 @@ class Step(object):
         for kwargs in self._expected:
             method = kwargs.pop("__method__")
             try:
-                res, message = method(**kwargs)  # TODO - How about expectations without return now it raise a TypeError... It correct? May be catch and register another warning?
+                res, message = method(**kwargs)
                 if not res:
                     self.register_warning(message)
+                    self._state = State.WARN
             except Exception as err:
-                self.register_warning( repr(err) ) # TODO - Do you think about exception inside expectations section ?
-                self._state = State.WARN
+                self.register_warning(repr(err))
+                self._state = State.BROK
 

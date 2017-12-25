@@ -117,7 +117,7 @@ class StepManager(object):
             self.stop(reactor)
         else:
             step = self._backlog.pop(0)
-            self.__log.info("Step with name '{name}' started at reactor time {time}".format(name=step.name, time=reactor.seconds()))
+            self.__log.info("'{name}' step execution started".format(name=step.name, time=reactor.seconds()))
 
             step.set_start_time(reactor.seconds())
             step.run()

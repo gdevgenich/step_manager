@@ -16,6 +16,7 @@ class StepTestCase(PBXTestCase):
     __sm__ = None
 
     CAREFUL = True
+    TIMEOUT = 180
 
 
     def prepareReport(self, sm):
@@ -32,6 +33,13 @@ class StepTestCase(PBXTestCase):
             err.content = self.prepareReport(self.__sm__)
             raise err
 
+    def assertFalse(self, actual, msg=None):
+
+        if actual != False:
+            err = AssertionError(msg)
+            err.content = self.prepareReport(self.__sm__)
+            raise err
+
 
     @abstractmethod
     def initialize(self, sm):
@@ -42,3 +50,5 @@ class StepTestCase(PBXTestCase):
        self.__sm__ = StepManager(careful=self.CAREFUL)
        self.initialize(self.__sm__)
        self.__sm__.run()
+
+       self.assertFalse(self.__sm__.has_warnings(), self.__sm__.get_warnings())
