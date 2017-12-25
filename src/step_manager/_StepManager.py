@@ -117,11 +117,19 @@ class StepManager(object):
             self.stop(reactor)
         else:
             step = self._backlog.pop(0)
-            self.__log.info("'{name}' step execution started".format(name=step.name, time=reactor.seconds()))
+            self.__log.info("'{name}' step execution started".format(name=step.name))
 
             step.set_start_time(reactor.seconds())
-            step.run()
-            step.set_stop_time(reactor.seconds())
+            try:
+                step.run()
+            except Exception as err:
+                self.__log.error("'{name}' step execution filed with next exception".format(name=step.name))
+                self.__log.error(err)
+                raise
+            else:
+                step.set_stop_time(reactor.seconds())
+                self.__log.info("'{name}' step execution finished took {sec} seconds".
+                                format(name=step.name, sec=step.stop_time-step.start_time))
 
             if self._careful:
                 new_duration = step.duration - step.seconds  # TODO - careful about negative value ...
