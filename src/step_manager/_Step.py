@@ -2,6 +2,8 @@
 
 from __future__ import absolute_import
 
+import logging
+
 class State(object):
     UNKNOWN = "unknown"
     PASS = "passed"
@@ -109,12 +111,21 @@ class Step(object):
         # Step 2. Collect expected messages
         for kwargs in self._expected:
             method = kwargs.pop("__method__")
+            self._owner.log(logging.INFO, "Check expected '{method}' with params {params}".format(method=method.__name__, params=kwargs))
             try:
                 res, message = method(**kwargs)
                 if not res:
+                    self._owner.log( logging.ERROR,
+                                     "Check of expected '{method}' with params {params} failed with message {message}"
+                                     .format(method=method.__name__, params=kwargs,message=message))
                     self.register_warning(message)
                     self._state = State.WARN
+                else:
+                    self._owner.log(logging.INFO,
+                                    "Check expected '{method}' with params {params} passed".format(method=method.__name__, params=kwargs))
             except Exception as err:
+                self._owner.log(logging.ERROR,
+                                "Check expected '{method}' with params {params} failed with exception {err}".
+                                format(method=method.__name__, params=kwargs, err=err))
                 self.register_warning(repr(err))
                 self._state = State.BROK
-

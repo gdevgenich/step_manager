@@ -3,7 +3,7 @@
 from __future__ import absolute_import
 
 from sys import stdout
-from logging import getLogger
+import logging
 from copy import copy
 
 from reactor import Reactor
@@ -17,7 +17,7 @@ class StepManager(object):
     """
 
     def __init__(self, careful=False):
-        self.__log = getLogger("step_manager")
+        self._log = logging.getLogger("step_manager")
         self._steps = list()
         self._backlog = list()
         self._completed = False
@@ -25,10 +25,15 @@ class StepManager(object):
         self.__warnings = list()
         self._duration = 0.0
         self._careful = careful
+        self.level = 0
 
     @property
     def completed(self):
         return self._completed
+
+    def log(self, level, message):
+        message="+"*self.level+message
+        self._log.log(level=level, msg=message)
 
     def set_duration(self, duration):
         self._duration = duration
@@ -117,18 +122,18 @@ class StepManager(object):
             self.stop(reactor)
         else:
             step = self._backlog.pop(0)
-            self.__log.info("'{name}' step execution started".format(name=step.name))
+            self.log(logging.INFO, "'{name}' step execution started".format(name=step.name))
 
             step.set_start_time(reactor.seconds())
             try:
                 step.run()
             except Exception as err:
-                self.__log.error("'{name}' step execution filed with next exception".format(name=step.name))
-                self.__log.error(err)
+                self.log(logging.ERROR, "'{name}' step execution filed with next exception".format(name=step.name))
+                self.log(logging.ERROR, err)
                 raise
             else:
                 step.set_stop_time(reactor.seconds())
-                self.__log.info("'{name}' step execution finished took {sec} seconds".
+                self.log(logging.INFO, "'{name}' step execution finished took {sec} seconds".
                                 format(name=step.name, sec=step.stop_time-step.start_time))
 
             if self._careful:
@@ -137,23 +142,22 @@ class StepManager(object):
                 new_duration = step.duration
 
             if step.sm is not None:
-                self.__log.info("Substeps from step with name '{name}' started at reactor time {time}".format(name=step.name, time=reactor.seconds()))
+                step.sm.level = self.level+1
+                self.log(logging.INFO, "Substeps from step with name '{name}' started".format(name=step.name, time=reactor.seconds()))
                 step.sm.set_exec_after(self._iteration)
                 step.sm.set_duration(step.duration)
                 reactor.call_later(0.0, step.sm.start)
             else:
                 reactor.call_later(new_duration, self._iteration)
 
-
     def stop(self, reactor):
         self._completed = True
         if self._exec_after is None:
-            self.__log.info("Main Step Manager finished work at reactor time {time}".format(time=reactor.seconds()))
+            self.log(logging.INFO, "Main Step Manager finished work at reactor time {time}".format(time=reactor.seconds()))
             reactor.stop()
         else:
-            self.__log.info("Substeps sequence finished work at reactor time {time}".format(time=reactor.seconds()))
+            self.log(logging.INFO, "Substeps sequence finished work at reactor time {time}".format(time=reactor.seconds()))
             reactor.call_later(self._duration, self._exec_after)
-
 
     def dump(self, level=0, base_order=None, stream=None):
 
