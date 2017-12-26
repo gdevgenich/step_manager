@@ -32,7 +32,7 @@ class StepManager(object):
         return self._completed
 
     def log(self, level, message):
-        message="+"*self.level+message
+        message="+"*self.level+str(message)
         self._log.log(level=level, msg=message)
 
     def set_duration(self, duration):
@@ -129,7 +129,7 @@ class StepManager(object):
                 step.run()
             except Exception as err:
                 self.log(logging.ERROR, "'{name}' step execution filed with next exception".format(name=step.name))
-                self.log(logging.ERROR, err)
+                self.log(logging.ERROR, err.message)
                 raise
             else:
                 step.set_stop_time(reactor.seconds())
@@ -148,6 +148,8 @@ class StepManager(object):
                 step.sm.set_duration(step.duration)
                 reactor.call_later(0.0, step.sm.start)
             else:
+                self.log(logging.INFO,
+                         "Next step will be started after {dur} seconds timeout".format(dur=new_duration))
                 reactor.call_later(new_duration, self._iteration)
 
     def stop(self, reactor):
@@ -157,6 +159,8 @@ class StepManager(object):
             reactor.stop()
         else:
             self.log(logging.INFO, "Substeps sequence finished work at reactor time {time}".format(time=reactor.seconds()))
+            self.log(logging.INFO,
+                     "Next step will be started after {dur} seconds timeout".format(dur=self._duration))
             reactor.call_later(self._duration, self._exec_after)
 
     def dump(self, level=0, base_order=None, stream=None):

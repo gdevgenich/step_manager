@@ -101,31 +101,40 @@ class Step(object):
         # Step 1. Execute action in critical section
         try:
             if self._action:
+                self._owner.log(logging.ERROR,
+                                "Action {action} with params {params} started"
+                                .format(action=self._action, params=self._kwargs))
                 self._action(**self._kwargs)
 
             self._state = State.PASS
-        except:
+        except Exception as err:
             self._state = State.FAIL
+            self._owner.log(logging.ERROR,
+                            "Action {action} with params {params} failed with exception {err}".format(action=self._action,
+                                                                                    params=self._kwargs, err=err.message))
             raise
-
+        if self._action:
+            self._owner.log(logging.ERROR,
+                            "Action {action} with params {params} completed"
+                            .format(action=self._action, params=self._kwargs))
         # Step 2. Collect expected messages
         for kwargs in self._expected:
             method = kwargs.pop("__method__")
-            self._owner.log(logging.INFO, "Check expected '{method}' with params {params}".format(method=method.__name__, params=kwargs))
+            self._owner.log(logging.INFO, "Check expected '{method}' with params {params}".format(method=method, params=kwargs))
             try:
                 res, message = method(**kwargs)
                 if not res:
                     self._owner.log( logging.ERROR,
                                      "Check of expected '{method}' with params {params} failed with message {message}"
-                                     .format(method=method.__name__, params=kwargs,message=message))
+                                     .format(method=method, params=kwargs,message=message))
                     self.register_warning(message)
                     self._state = State.WARN
                 else:
                     self._owner.log(logging.INFO,
-                                    "Check expected '{method}' with params {params} passed".format(method=method.__name__, params=kwargs))
+                                    "Check expected '{method}' with params {params} passed".format(method=method, params=kwargs))
             except Exception as err:
                 self._owner.log(logging.ERROR,
                                 "Check expected '{method}' with params {params} failed with exception {err}".
-                                format(method=method.__name__, params=kwargs, err=err))
+                                format(method=method, params=kwargs, err=err))
                 self.register_warning(repr(err))
                 self._state = State.BROK
