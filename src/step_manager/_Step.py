@@ -101,7 +101,7 @@ class Step(object):
         # Step 1. Execute action in critical section
         try:
             if self._action:
-                self._owner.log(logging.ERROR,
+                self._owner.log(logging.INFO,
                                 "Action {action} with params {params} started"
                                 .format(action=self._action, params=self._kwargs))
                 self._action(**self._kwargs)
@@ -110,11 +110,11 @@ class Step(object):
         except Exception as err:
             self._state = State.FAIL
             self._owner.log(logging.ERROR,
-                            "Action {action} with params {params} failed with exception {err}".format(action=self._action,
+                            "Action {action} with params {params} failed with exception \n {err}".format(action=self._action,
                                                                                     params=self._kwargs, err=err.message))
             raise
         if self._action:
-            self._owner.log(logging.ERROR,
+            self._owner.log(logging.INFO,
                             "Action {action} with params {params} completed"
                             .format(action=self._action, params=self._kwargs))
         # Step 2. Collect expected messages
@@ -134,7 +134,7 @@ class Step(object):
                                     "Check expected '{method}' with params {params} passed".format(method=method, params=kwargs))
             except Exception as err:
                 self._owner.log(logging.ERROR,
-                                "Check expected '{method}' with params {params} failed with exception {err}".
+                                "Check expected '{method}' with params {params} failed with exception \n {err}".
                                 format(method=method, params=kwargs, err=err))
                 self.register_warning(repr(err))
                 self._state = State.BROK

@@ -128,8 +128,7 @@ class StepManager(object):
             try:
                 step.run()
             except Exception as err:
-                self.log(logging.ERROR, "'{name}' step execution filed with next exception".format(name=step.name))
-                self.log(logging.ERROR, err.message)
+                self.log(logging.ERROR, "'{name}' step execution filed with next exception \n {err}".format(name=step.name, err=err.message))
                 raise
             else:
                 step.set_stop_time(reactor.seconds())
