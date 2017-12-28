@@ -49,6 +49,6 @@ class StepTestCase(PBXTestCase):
     def runTest(self):
        self.__sm__ = StepManager(careful=self.CAREFUL)
        self.initialize(self.__sm__)
-       self.__sm__.run()
+       self.__sm__.run(timeout=self.TIMEOUT)
 
        self.assertFalse(self.__sm__.has_warnings(), self.__sm__.get_warnings())
