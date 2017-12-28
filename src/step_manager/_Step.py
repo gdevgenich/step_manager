@@ -138,3 +138,4 @@ class Step(object):
                                 format(method=method, params=kwargs, err=err))
                 self.register_warning(repr(err))
                 self._state = State.BROK
+                raise
