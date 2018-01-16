@@ -15,7 +15,7 @@ class StepTestCase(PBXTestCase):
     __metaclass__ = ABCMeta
     __sm__ = None
 
-    CAREFUL = True
+    CAREFUL = False
     TIMEOUT = 180
 
 
