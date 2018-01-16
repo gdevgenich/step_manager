@@ -118,32 +118,37 @@ class StepManager(object):
         return warning_string
 
     def _iteration(self, reactor):
+        # If no step left then reactor should be stopped
         if len(self._backlog) == 0:
             self.stop(reactor)
         else:
+            # Get first step in queue
             step = self._backlog.pop(0)
             self.log(logging.INFO, "'{name}' step execution started".format(name=step.name))
-
+            # Save reactor start time for step
             step.set_start_time(reactor.seconds())
             try:
+                # Run step
                 step.run()
             except Exception as err:
                 self.log(logging.ERROR, "'{name}' step execution filed with next exception \n {err}".format(name=step.name, err=err.message))
                 raise
             else:
+                # Save step stop time if no exceptions happen
                 step.set_stop_time(reactor.seconds())
                 self.log(logging.INFO, "'{name}' step execution finished took {sec} seconds".
                                 format(name=step.name, sec=step.stop_time-step.start_time))
 
             if self._careful:
-                new_duration = step.duration - step.seconds  # TODO - careful about negative value ...
+                new_duration = step.duration - step.seconds
             else:
                 new_duration = step.duration
-
+            # If step has substeps then run start step manager with substeps
             if step.sm is not None:
                 step.sm.level = self.level+1
                 self.log(logging.INFO, "Substeps from step with name '{name}' started".format(name=step.name, time=reactor.seconds()))
                 step.sm.set_exec_after(self._iteration)
+                # Careful with timeout between steps
                 step.sm.set_duration(step.duration)
                 reactor.call_later(0.0, step.sm.start)
             else:
