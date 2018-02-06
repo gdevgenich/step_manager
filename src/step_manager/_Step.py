@@ -17,11 +17,15 @@ class Step(object):
     @ivar StepManager _owner:
     """
 
-    def __init__(self, owner, name, action, duration=0.0, **kwargs):
+    def __init__(self, owner, name, action, duration=0.0, interval=0, attempts=1, **kwargs):
         self._owner = owner
         self._name = name
         self._action = action
         self._kwargs = kwargs
+        self.interval = interval
+        self._left_attempts = attempts
+        self.repeat = False
+        self._action_executed = False
         self._sm = None
         self._duration = duration
         self._expected = list()
@@ -77,6 +81,7 @@ class Step(object):
 
 
     def add_expected(self, expected, **kwargs):
+
         kwargs["__method__"] = expected
         self._expected.append(kwargs) # TODO - Why you does not create a class? Do you have any class limitations? Reason mixing two different kind of instances?
         return self
@@ -100,12 +105,15 @@ class Step(object):
 
         # Step 1. Execute action in critical section
         try:
-            if self._action:
+            if self._action and not self._action_executed:
                 self._owner.log(logging.INFO,
                                 "Action {action} with params {params} started"
                                 .format(action=self._action, params=self._kwargs))
+                self._action_executed = True
                 self._action(**self._kwargs)
-
+                self._owner.log(logging.INFO,
+                                "Action {action} with params {params} completed"
+                                .format(action=self._action, params=self._kwargs))
             self._state = State.PASS
         except Exception as err:
             self._state = State.FAIL
@@ -113,29 +121,35 @@ class Step(object):
                             "Action {action} with params {params} failed with exception \n {err}".format(action=self._action,
                                                                                     params=self._kwargs, err=err.message))
             raise
-        if self._action:
-            self._owner.log(logging.INFO,
-                            "Action {action} with params {params} completed"
-                            .format(action=self._action, params=self._kwargs))
+
         # Step 2. Collect expected messages
+        self.repeat = False
         for kwargs in self._expected:
-            method = kwargs.pop("__method__")
-            self._owner.log(logging.INFO, "Check expected '{method}' with params {params}".format(method=method, params=kwargs))
+            temp_kwargs = kwargs.copy()
+            method = temp_kwargs.pop("__method__")
+            self._owner.log(logging.INFO, "Check expected '{method}' with params {params}".format(method=method, params=temp_kwargs))
             try:
-                res, message = method(**kwargs)
-                if not res:
+                res, message = method(**temp_kwargs)
+                if not res and self._left_attempts <= 1:
                     self._owner.log( logging.ERROR,
                                      "Check of expected '{method}' with params {params} failed with message {message}"
-                                     .format(method=method, params=kwargs,message=message))
+                                     .format(method=method, params=temp_kwargs,message=message))
                     self.register_warning(message)
                     self._state = State.WARN
+                elif not res:
+                    self._owner.log(logging.WARNING,
+                                    "Check of expected '{method}' with params {params} failed with message {message}. \
+                                    Check will be repeated".format(method=method, params=temp_kwargs,message=message))
+                    self.repeat = True
                 else:
                     self._owner.log(logging.INFO,
-                                    "Check expected '{method}' with params {params} passed".format(method=method, params=kwargs))
+                                    "Check expected '{method}' with params {params} passed".format(method=method, params=temp_kwargs))
             except Exception as err:
                 self._owner.log(logging.ERROR,
                                 "Check expected '{method}' with params {params} failed with exception \n {err}".
-                                format(method=method, params=kwargs, err=err))
+                                format(method=method, params=temp_kwargs, err=err))
                 self.register_warning(repr(err))
                 self._state = State.BROK
                 raise
+        self._left_attempts -= 1
+
