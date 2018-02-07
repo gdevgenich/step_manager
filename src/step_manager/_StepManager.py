@@ -152,6 +152,7 @@ class StepManager(object):
                     step.sm.set_exec_after(self._iteration)
                     # Careful with timeout between steps
                     step.sm.set_duration(step.duration)
+                    self._backlog.pop(0)
                     reactor.call_later(0.0, step.sm.start)
                 else:
                     self.log(logging.INFO,

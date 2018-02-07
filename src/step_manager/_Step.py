@@ -79,17 +79,13 @@ class Step(object):
         step = self._sm.add_step(name=name, action=action, duration=duration, **kwargs)
         return step
 
-
     def add_expected(self, expected, **kwargs):
-
         kwargs["__method__"] = expected
         self._expected.append(kwargs) # TODO - Why you does not create a class? Do you have any class limitations? Reason mixing two different kind of instances?
         return self
 
-
     def register_warning(self, msg):
         self.warnings.append("{step}: {msg}".format(step=self.name, msg=msg))
-
 
     def collect_warnings(self):
         if len(self.warnings) > 0:
@@ -100,9 +96,7 @@ class Step(object):
                 self.register_warning(msg=msg)
         return self.warnings
 
-
     def run(self):
-
         # Step 1. Execute action in critical section
         try:
             if self._action and not self._action_executed:
