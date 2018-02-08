@@ -82,8 +82,8 @@ class Step(object):
         step = self._sm.add_step(name=name, action=action, duration=duration, **kwargs)
         return step
 
-    def add_expected(self, expected, expected_value = True, **kwargs):
-        self._expected.append(Expected(owner=self, method=expected, expected=expected_value, **kwargs))
+    def add_expected(self, expected, **kwargs):
+        self._expected.append(Expected(owner=self, method=expected, **kwargs))
         return self
 
     def register_warning(self, msg):
