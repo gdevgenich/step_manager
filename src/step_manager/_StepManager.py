@@ -124,9 +124,12 @@ class StepManager(object):
         else:
             # Get first step in queue
             step = self._backlog[0]
-            self.log(logging.INFO, "'{name}' step execution started".format(name=step.name))
+            if not step.start_info_provided:
+                step.start_info_provided = True
+                self.log(logging.INFO, "'{name}' step execution started".format(name=step.name))
             # Save reactor start time for step
-            step.set_start_time(reactor.seconds())
+            if step.start_time is None:
+                step.set_start_time(reactor.seconds())
             try:
                 # Run step
                 step.run()
@@ -134,10 +137,11 @@ class StepManager(object):
                 self.log(logging.ERROR, "'{name}' step execution filed with next exception \n {err}".format(name=step.name, err=err.message))
                 raise
             else:
-                # Save step stop time if no exceptions happen
-                step.set_stop_time(reactor.seconds())
-                self.log(logging.INFO, "'{name}' step execution finished took {sec} seconds".
-                                format(name=step.name, sec=step.stop_time-step.start_time))
+                if not step.repeat:
+                    # Save step stop time if no exceptions happen
+                    step.set_stop_time(reactor.seconds())
+                    self.log(logging.INFO, "'{name}' step execution finished took {sec} seconds".
+                                    format(name=step.name, sec=step.stop_time-step.start_time))
             if step.repeat:
                 reactor.call_later(step.interval, self._iteration)
             else:
