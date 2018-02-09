@@ -3,7 +3,7 @@
 from __future__ import absolute_import
 
 import logging
-from .expected import Expected
+from ._Expected import Expected
 
 class State(object):
     UNKNOWN = "unknown"

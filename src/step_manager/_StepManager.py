@@ -141,7 +141,7 @@ class StepManager(object):
                     # Save step stop time if no exceptions happen
                     step.set_stop_time(reactor.seconds())
                     self.log(logging.INFO, "'{name}' step execution finished took {sec} seconds".
-                                    format(name=step.name, sec=step.stop_time-step.start_time))
+                                    format(name=step.name, sec="%.3f" % (step.stop_time-step.start_time)))
             if step.repeat:
                 reactor.call_later(step.interval, self._iteration)
             else:
@@ -152,7 +152,7 @@ class StepManager(object):
                 # If step has substeps then run start step manager with substeps
                 if step.sm is not None:
                     step.sm.level = self.level+1
-                    self.log(logging.INFO, "Substeps from step with name '{name}' started".format(name=step.name, time=reactor.seconds()))
+                    self.log(logging.INFO, "Substeps from step with name '{name}' started".format(name=step.name, time="%.3f" % reactor.seconds()))
                     step.sm.set_exec_after(self._iteration)
                     # Careful with timeout between steps
                     step.sm.set_duration(step.duration)
@@ -167,10 +167,10 @@ class StepManager(object):
     def stop(self, reactor):
         self._completed = True
         if self._exec_after is None:
-            self.log(logging.INFO, "Main Step Manager finished work at reactor time {time}".format(time=reactor.seconds()))
+            self.log(logging.INFO, "Main Step Manager finished work at reactor time {time}".format(time="%.2f" %reactor.seconds()))
             reactor.stop()
         else:
-            self.log(logging.INFO, "Substeps sequence finished work at reactor time {time}".format(time=reactor.seconds()))
+            self.log(logging.INFO, "Substeps sequence finished work at reactor time {time}".format(time="%.2f" %reactor.seconds()))
             self.log(logging.INFO,
                      "Next step will be started after {dur} seconds timeout".format(dur=self._duration))
             reactor.call_later(self._duration, self._exec_after)
