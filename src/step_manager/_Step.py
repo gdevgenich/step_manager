@@ -18,7 +18,7 @@ class Step(object):
     @ivar StepManager _owner:
     """
 
-    def __init__(self, owner, name, action, duration=0.0, interval=0, attempts=1, **kwargs):
+    def __init__(self, owner, name, action, duration=0.0, interval=0, attempts=1, throw_except=False, **kwargs):
         self._owner = owner
         self.log = owner.log
         self._name = name
@@ -35,6 +35,7 @@ class Step(object):
         self.start_time = None
         self.end_time = None
         self.start_info_provided = False
+        self.throw_except = throw_except
         self._state = State.UNKNOWN
 
     @property
@@ -76,10 +77,10 @@ class Step(object):
     def get_stop_time(self):
         return self.stop_time
 
-    def add_substep(self, name, action=None, duration=0.0, **kwargs):
+    def add_substep(self, name, action=None, duration=0.0, interval=0, attempts=1, throw_except=False, **kwargs):
         if self._sm is None:
             self._sm = self._owner.createStepManager()
-        step = self._sm.add_step(name=name, action=action, duration=duration, **kwargs)
+        step = self._sm.add_step(name=name, action=action, duration=duration, interval=interval, attempts=attempts, throw_except=throw_except, **kwargs)
         return step
 
     def add_expected(self, expected, **kwargs):
@@ -128,6 +129,8 @@ class Step(object):
                     self.log(logging.WARNING, "Check of expected failed with message {message}".format(message=message))
                     self.register_warning(message)
                     self._state = State.WARN
+                    if self.throw_except:
+                        raise AssertionError("Check of expected failed with message {message}".format(message=message))
                 elif not res:
                     self.repeat = True
             except Exception as err:

@@ -59,16 +59,16 @@ class StepManager(object):
                 return step
         raise Exception("No step with name {name} found".format(name=name))
 
-    def add_substep(self, step_name, substep_name, action=None, duration=0.0, **kwargs):
+    def add_substep(self, step_name, substep_name, action=None, duration=0.0, interval=0, attempts=1, throw_except=False, **kwargs):
         step = self.find_step(name=step_name)
-        step.add_substep(name=substep_name, action=action, duration=duration, **kwargs)
+        step.add_substep(name=substep_name, action=action, duration=duration, interval=interval, attempts=attempts, throw_except=throw_except, **kwargs)
 
     @staticmethod
     def createStepManager():
         return StepManager()
 
     def add_step(self, name, action=None, duration=0.0, interval=0, attempts=1, **kwargs):
-        step = Step(owner=self, name=name, action=action, duration=duration, interval=interval, attempts=attempts, **kwargs)
+        step = Step(owner=self, name=name, action=action, duration=duration, interval=interval, attempts=attempts, throw_except=False,**kwargs)
         self._steps.append(step)
         return step
 
