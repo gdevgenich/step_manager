@@ -22,7 +22,7 @@ class Expected(object):
         if not self.__info_provided:
             self.__info_provided = True
             self.log(logging.INFO,
-                 "Check expected '{method}' with params {params}".format(method=method_name, params=self._kwargs))
+                 ".Check expected '{method}' with params {params}".format(method=method_name, params=self._kwargs))
 
         res = self._method(**self._kwargs)
         if not isinstance(res, tuple):
@@ -30,7 +30,7 @@ class Expected(object):
         if res[0] != self._expected:
             return False, res[1]
         else:
-            self.log(logging.INFO, "Check of expected passed")
+            self.log(logging.INFO, ".Check of expected passed")
             return True, ""
 
 
