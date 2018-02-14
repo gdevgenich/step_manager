@@ -129,7 +129,7 @@ class StepManager(object):
             step = self._backlog[0]
             if not step.start_info_provided:
                 step.start_info_provided = True
-                self.log(logging.INFO, "{name}: step execution started".format(name=step.name))
+                self.log(logging.INFO, "{name} :: step execution started".format(name=step.name))
             # Save reactor start time for step
             if step.start_time is None:
                 step.set_start_time(reactor.seconds())
@@ -138,13 +138,13 @@ class StepManager(object):
                 step.run()
             except Exception as err:
                 self.log(logging.ERROR,
-                         "{name}: step execution failed, reason: {err}".format(name=step.name, err=err.message))
+                         "{name} :: step execution failed, reason: {err}".format(name=step.name, err=err.message))
                 raise
             else:
                 if not step.repeat:
                     # Save step stop time if no exceptions happen
                     step.set_stop_time(reactor.seconds())
-                    self.log(logging.INFO, "{name}: step execution finished in {sec} seconds".
+                    self.log(logging.INFO, "{name} :: step execution finished in {sec} seconds".
                              format(name=step.name, sec="%.3f" % (step.stop_time - step.start_time)))
             if step.repeat:
                 reactor.call_later(step.interval, self._iteration)
@@ -156,7 +156,7 @@ class StepManager(object):
                 # If step has substeps then run start step manager with substeps
                 if step.sm is not None:
                     step.sm.level = self.level + 1
-                    self.log(logging.INFO, "Substeps from step with name '{name}' started".format(name=step.name,
+                    self.log(logging.INFO, "--Substeps from step with name '{name}' started".format(name=step.name,
                                                                                                   time="%.3f" % reactor.seconds()))
                     step.sm.set_exec_after(self._iteration)
                     # Careful with timeout between steps
@@ -165,7 +165,7 @@ class StepManager(object):
                     reactor.call_later(0.0, step.sm.start)
                 else:
                     self.log(logging.INFO,
-                             "Next step will be started after {dur} seconds timeout".format(dur=new_duration))
+                             "--Next step will be started after {dur} seconds timeout".format(dur=new_duration))
                     self._backlog.pop(0)
                     reactor.call_later(new_duration, self._iteration)
 
@@ -177,9 +177,9 @@ class StepManager(object):
             reactor.stop()
         else:
             self.log(logging.INFO,
-                     "Substeps sequence finished work at reactor time {time}".format(time="%.2f" % reactor.seconds()))
+                     "--Substeps sequence finished work at reactor time {time}".format(time="%.2f" % reactor.seconds()))
             self.log(logging.INFO,
-                     "Next step will be started after {dur} seconds timeout".format(dur=self._duration))
+                     "--Next step will be started after {dur} seconds timeout".format(dur=self._duration))
             reactor.call_later(self._duration, self._exec_after)
 
     def dump(self, level=0, base_order=None, stream=None):
