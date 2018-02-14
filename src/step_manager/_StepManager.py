@@ -184,7 +184,7 @@ class StepManager(object):
             base_order = []
 
         for number, s in enumerate(self._steps):
-            padding = " + " * level
+            padding = ".." * level
             order = copy(base_order)
             order.append(str(number+1))
             step_number = ".".join(order)
