@@ -9,7 +9,7 @@ setup(
     author="Vitold Sedyshev, Dmitry Girdyuk",
     author_email="vit1251@gmail.com",
     keywords="test mnager",
-    version="1.21",
+    version="1.22",
     package_dir={'': 'src'},
     packages=find_packages('src'),
     zip_safe=False
