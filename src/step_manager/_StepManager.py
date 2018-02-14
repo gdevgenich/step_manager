@@ -32,7 +32,7 @@ class StepManager(object):
         return self._completed
 
     def log(self, level, message):
-        message = "+" * self.level + str(message)
+        message = ".." * self.level + str(message)
         self._log.log(level=level, msg=message)
 
     def set_duration(self, duration):
