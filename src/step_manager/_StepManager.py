@@ -32,7 +32,7 @@ class StepManager(object):
         return self._completed
 
     def log(self, level, message):
-        message="+"*self.level+str(message)
+        message = "+" * self.level + str(message)
         self._log.log(level=level, msg=message)
 
     def set_duration(self, duration):
@@ -59,16 +59,19 @@ class StepManager(object):
                 return step
         raise Exception("No step with name {name} found".format(name=name))
 
-    def add_substep(self, step_name, substep_name, action=None, duration=0.0, interval=0, attempts=1, throw_except=False, **kwargs):
+    def add_substep(self, step_name, substep_name, action=None, duration=0.0, interval=0, attempts=1,
+                    throw_except=False, **kwargs):
         step = self.find_step(name=step_name)
-        step.add_substep(name=substep_name, action=action, duration=duration, interval=interval, attempts=attempts, throw_except=throw_except, **kwargs)
+        step.add_substep(name=substep_name, action=action, duration=duration, interval=interval, attempts=attempts,
+                         throw_except=throw_except, **kwargs)
 
     @staticmethod
     def createStepManager():
         return StepManager()
 
-    def add_step(self, name, action=None, duration=0.0, interval=0, attempts=1, **kwargs):
-        step = Step(owner=self, name=name, action=action, duration=duration, interval=interval, attempts=attempts, throw_except=False,**kwargs)
+    def add_step(self, name, action=None, duration=0.0, interval=0, attempts=1, throw_except=False, **kwargs):
+        step = Step(owner=self, name=name, action=action, duration=duration, interval=interval, attempts=attempts,
+                    throw_except=throw_except, **kwargs)
         self._steps.append(step)
         return step
 
@@ -80,7 +83,7 @@ class StepManager(object):
         if after_step_index == -1:
             raise ValueError("No step with name {after_step} registered in step manager".format(after_step=after_step))
         step = Step(self, name, action, duration, **kwargs)
-        self._steps.insert(after_step_index+1, step)
+        self._steps.insert(after_step_index + 1, step)
         return step
 
     def run(self, timeout=180):
@@ -114,7 +117,7 @@ class StepManager(object):
             self.__warnings.append("Step manager wasn't completed")
         warning_string = ""
         for warning in self.__warnings:
-            warning_string+="\n"+warning
+            warning_string += "\n" + warning
         return warning_string
 
     def _iteration(self, reactor):
@@ -134,14 +137,16 @@ class StepManager(object):
                 # Run step
                 step.run()
             except Exception as err:
-                self.log(logging.ERROR, "'{name}' step execution filed with next exception \n {err}".format(name=step.name, err=err.message))
+                self.log(logging.ERROR,
+                         "'{name}' step execution filed with next exception \n {err}".format(name=step.name,
+                                                                                             err=err.message))
                 raise
             else:
                 if not step.repeat:
                     # Save step stop time if no exceptions happen
                     step.set_stop_time(reactor.seconds())
                     self.log(logging.INFO, "'{name}' step execution finished took {sec} seconds".
-                                    format(name=step.name, sec="%.3f" % (step.stop_time-step.start_time)))
+                             format(name=step.name, sec="%.3f" % (step.stop_time - step.start_time)))
             if step.repeat:
                 reactor.call_later(step.interval, self._iteration)
             else:
@@ -151,8 +156,9 @@ class StepManager(object):
                     new_duration = step.duration
                 # If step has substeps then run start step manager with substeps
                 if step.sm is not None:
-                    step.sm.level = self.level+1
-                    self.log(logging.INFO, "Substeps from step with name '{name}' started".format(name=step.name, time="%.3f" % reactor.seconds()))
+                    step.sm.level = self.level + 1
+                    self.log(logging.INFO, "Substeps from step with name '{name}' started".format(name=step.name,
+                                                                                                  time="%.3f" % reactor.seconds()))
                     step.sm.set_exec_after(self._iteration)
                     # Careful with timeout between steps
                     step.sm.set_duration(step.duration)
@@ -167,10 +173,12 @@ class StepManager(object):
     def stop(self, reactor):
         self._completed = True
         if self._exec_after is None:
-            self.log(logging.INFO, "Main Step Manager finished work at reactor time {time}".format(time="%.2f" %reactor.seconds()))
+            self.log(logging.INFO,
+                     "Main Step Manager finished work at reactor time {time}".format(time="%.2f" % reactor.seconds()))
             reactor.stop()
         else:
-            self.log(logging.INFO, "Substeps sequence finished work at reactor time {time}".format(time="%.2f" %reactor.seconds()))
+            self.log(logging.INFO,
+                     "Substeps sequence finished work at reactor time {time}".format(time="%.2f" % reactor.seconds()))
             self.log(logging.INFO,
                      "Next step will be started after {dur} seconds timeout".format(dur=self._duration))
             reactor.call_later(self._duration, self._exec_after)
@@ -186,14 +194,16 @@ class StepManager(object):
         for number, s in enumerate(self._steps):
             padding = ".." * level
             order = copy(base_order)
-            order.append(str(number+1))
+            order.append(str(number + 1))
             step_number = ".".join(order)
             step_name = s._name
             step_action = s.action
             step_expecteds = s._expected
             step_duration = s.duration
             step_state = s.state
-            msg = "{padding} {step_number}. {step_name} [{state}] (action={step_action!r} expecteds={step_expecteds!r} duration={step_duration!r})\n".format(padding=padding, step_number=step_number, step_name=step_name, state=step_state, step_action=step_action, step_expecteds=step_expecteds, step_duration=step_duration)
+            msg = "{padding} {step_number}. {step_name} [{state}] (action={step_action!r} expecteds={step_expecteds!r} duration={step_duration!r})\n".format(
+                padding=padding, step_number=step_number, step_name=step_name, state=step_state,
+                step_action=step_action, step_expecteds=step_expecteds, step_duration=step_duration)
             stream.write(msg)
             if s.sm:
-                s.sm.dump(level=level+1, base_order=order, stream=stream)
+                s.sm.dump(level=level + 1, base_order=order, stream=stream)
