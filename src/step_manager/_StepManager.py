@@ -176,6 +176,7 @@ class StepManager(object):
                      "Main Step Manager finished work at reactor time {time}".format(time="%.2f" % reactor.seconds()))
             reactor.stop()
         else:
+            # self.level -= 1  TODO: decrease indentation after subsequence is completed
             self.log(logging.INFO,
                      ".Substeps sequence finished work at reactor time {time}".format(time="%.2f" % reactor.seconds()))
             self.log(logging.INFO,
