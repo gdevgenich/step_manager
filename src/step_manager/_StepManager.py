@@ -24,6 +24,7 @@ class StepManager(object):
         self._exec_after = None
         self.__warnings = list()
         self._duration = 0.0
+        self._context = dict()
         self._careful = careful
         self.level = 0
 
@@ -207,3 +208,21 @@ class StepManager(object):
             stream.write(msg)
             if s.sm:
                 s.sm.dump(level=level + 1, base_order=order, stream=stream)
+
+    def get(self, key):
+        return self._context.get(key)
+
+    def set(self, key, value):
+        self._context[key] = value
+
+    def add_to_dict(self, dict_name, key, value):
+        if self._context.has_key(dict_name):
+            self._context.get(dict_name)[key] = value
+        else:
+            self._context[dict_name] = dict((key,value))
+
+    def add_to_list(self, list_name, value):
+        if self._context.has_key(list_name):
+            self._context.get(list_name).append(value)
+        else:
+            self._context[list_name] = list(value)

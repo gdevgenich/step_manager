@@ -130,7 +130,7 @@ class Step(object):
                     self.register_warning(message)
                     self._state = State.WARN
                     if self.throw_except:
-                        raise AssertionError(".Check of expected failed with message: {message}".format(message=message))
+                        raise AssertionError("Check of expected failed with message: {message}".format(message=message))
                 elif not res:
                     self.repeat = True
             except Exception as err:
