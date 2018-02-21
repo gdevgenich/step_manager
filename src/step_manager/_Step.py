@@ -107,8 +107,7 @@ class Step(object):
                     action_name = self._action.__name__
                 else:
                     action_name = self._action
-                self.log(logging.INFO,
-                                ".Action {action} with params {params} started"
+                self.log(logging.INFO, ".Action {action} with params {params} started"
                                 .format(action=action_name, params=self._kwargs))
                 self._action_executed = True
                 self._action(**self._kwargs)
