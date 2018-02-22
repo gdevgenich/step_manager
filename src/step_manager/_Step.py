@@ -115,7 +115,7 @@ class Step(object):
             self._state = State.PASS
         except Exception as err:
             self._state = State.FAIL
-            self.log(logging.ERROR, ".Action failed with exception: {err}".format(err=err.message))
+            self.log(logging.ERROR, "!Action failed with exception: {err}".format(err=err.message))
             raise
 
         # Step 2. Collect expected messages
@@ -125,7 +125,7 @@ class Step(object):
             try:
                 res, message = expected.run()
                 if not res and self._left_attempts == 0:
-                    self.log(logging.WARNING, ".Check of expected failed with message: {message}".format(message=message))
+                    self.log(logging.WARNING, "!Check of expected failed with message: {message}".format(message=message))
                     self.register_warning(message)
                     self._state = State.WARN
                     if self.throw_except:
@@ -133,7 +133,7 @@ class Step(object):
                 elif not res:
                     self.repeat = True
             except Exception as err:
-                self.log(logging.ERROR, ".Check failed with exception: {err}".format(err=err))
+                self.log(logging.ERROR, "!Check failed with exception: {err}".format(err=err))
                 self.register_warning(repr(err))
                 self._state = State.BROK
                 raise
