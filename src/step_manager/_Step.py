@@ -125,11 +125,13 @@ class Step(object):
             try:
                 res, message = expected.run()
                 if not res and self._left_attempts == 0:
-                    self.log(logging.WARNING, "!Check of expected failed with message: {message}".format(message=message))
+                    self.log(logging.WARNING, "!Check of expected in step {step_name} failed with message: {message}"
+                             .format(step_name=self._name, message=message))
                     self.register_warning(message)
                     self._state = State.WARN
                     if self.throw_except:
-                        raise AssertionError("Check of expected failed with message: {message}".format(message=message))
+                        raise AssertionError("!Check of expected in step {step_name} failed with message: {message}"
+                             .format(step_name=self._name, message=message))
                 elif not res:
                     self.repeat = True
             except Exception as err:
