@@ -5,11 +5,11 @@ import logging
 
 class Expected(object):
 
-    def __init__(self, owner, method, expected=True, **kwargs):
+    def __init__(self, owner, method, should_return=True, **kwargs):
         self.owner = owner
         self.log = owner.log
         self._method = method
-        self._expected = expected
+        self._should_return = should_return
         self._kwargs = dict(**kwargs)
         self.__info_provided = False
 
@@ -27,7 +27,7 @@ class Expected(object):
         res = self._method(**self._kwargs)
         if not isinstance(res, tuple):
             res = (res, "No message provided")
-        if res[0] != self._expected:
+        if res[0] != self._should_return:
             return False, res[1]
         else:
             self.log(logging.INFO, ".Check of expected passed")
