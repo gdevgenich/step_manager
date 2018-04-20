@@ -54,11 +54,28 @@ class StepManager(object):
                 return i
         return -1
 
+    def find_last_step_index(self, name):
+        step = -1
+        for i in range(len(self._steps)):
+            if self._steps[i].name == name:
+                step = i
+        return step
+
     def find_step(self, name):
         for step in self._steps:
             if step.name == name:
                 return step
         raise Exception("No step with name {name} found".format(name=name))
+
+    def find_steps(self, name):
+        steps = list()
+        for step in self._steps:
+            if step.name == name:
+                steps.append(step)
+        if len(steps) == 0:
+            raise Exception("No step with name {name} found".format(name=name))
+        else:
+            return steps
 
     def add_substep(self, step_name, substep_name, action=None, duration=0.0, interval=0, attempts=1,
                     throw_except=False, **kwargs):
@@ -80,7 +97,7 @@ class StepManager(object):
         self._steps.remove(self.find_step(step_name))
 
     def add_step_after(self, after_step, name, action=None, duration=0.0, **kwargs):
-        after_step_index = self.find_step_index(after_step)
+        after_step_index = self.find_last_step_index(after_step)
         if after_step_index == -1:
             raise ValueError("No step with name {after_step} registered in step manager".format(after_step=after_step))
         step = Step(self, name, action, duration, **kwargs)
