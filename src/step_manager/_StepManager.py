@@ -5,6 +5,7 @@ from __future__ import absolute_import
 from sys import stdout
 import logging
 from copy import copy
+from datetime import datetime
 
 from reactor import Reactor
 
@@ -79,29 +80,46 @@ class StepManager(object):
 
     def add_substep(self, step_name, substep_name, action=None, duration=0.0, interval=0, attempts=1,
                     throw_except=False, **kwargs):
+        start = datetime.now()
+        self._log.debug("Try to add substep to step with name {step_name} at {start}".format(step_name=step_name,
+                                                                                             start=start))
         step = self.find_step(name=step_name)
         step.add_substep(name=substep_name, action=action, duration=duration, interval=interval, attempts=attempts,
                          throw_except=throw_except, **kwargs)
+        stop = datetime.now()
+        took = stop - start
+        self._log.debug("Step added took {took}".format(took=took))
 
     @staticmethod
     def createStepManager():
         return StepManager()
 
     def add_step(self, name, action=None, duration=0.0, interval=0, attempts=1, throw_except=False, **kwargs):
+        start = datetime.now()
+        self._log.debug("Try to add step with name {step_name} at {start}".format(step_name=name, start=start))
         step = Step(owner=self, name=name, action=action, duration=duration, interval=interval, attempts=attempts,
                     throw_except=throw_except, **kwargs)
         self._steps.append(step)
+        stop = datetime.now()
+        took = stop-start
+        self._log.debug("Step added took {took}".format(took=took))
         return step
 
     def remove_step(self, step_name):
         self._steps.remove(self.find_step(step_name))
 
     def add_step_after(self, after_step, name, action=None, duration=0.0, **kwargs):
+        start = datetime.now()
+        self._log.debug("Try to add step with name {step_name} after step {after_step} at {start}".
+                        format(step_name=name, after_step=after_step, start=start))
         after_step_index = self.find_last_step_index(after_step)
         if after_step_index == -1:
             raise ValueError("No step with name {after_step} registered in step manager".format(after_step=after_step))
         step = Step(self, name, action, duration, **kwargs)
         self._steps.insert(after_step_index + 1, step)
+        stop = datetime.now()
+        took = stop - start
+        self._log.debug("Step added took {took}".format(took=took))
         return step
 
     def run(self, timeout=180):
