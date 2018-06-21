@@ -3,6 +3,7 @@
 from __future__ import absolute_import
 
 import logging
+from datetime import datetime
 from ._Expected import Expected
 
 class State(object):
@@ -84,7 +85,12 @@ class Step(object):
         return step
 
     def add_expected(self, method, **kwargs):
+        start = datetime.now()
+        self.log(logging.DEBUG, "Add expected to step {name} at {start}".format(name=self.name, start=start))
         self._expected.append(Expected(owner=self, method=method, **kwargs))
+        stop = datetime.now()
+        took=stop-start
+        self.log(logging.DEBUG, "Expected added took {took}".format(took=took))
         return self
 
     def register_warning(self, msg):
