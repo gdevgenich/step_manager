@@ -248,15 +248,21 @@ class StepManager(object):
         return self._context.get(key)
 
     def set(self, key, value):
+        if callable(value):
+            value = value()
         self._context[key] = value
 
     def add_to_dict(self, dict_name, key, value):
+        if callable(value):
+            value = value()
         if self._context.has_key(dict_name):
             self._context.get(dict_name)[key] = value
         else:
             self._context[dict_name] = dict((key,value))
 
     def add_to_list(self, list_name, value):
+        if callable(value):
+            value = value()
         if self._context.has_key(list_name):
             self._context.get(list_name).append(value)
         else:
