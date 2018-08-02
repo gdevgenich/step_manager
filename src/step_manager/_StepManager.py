@@ -84,11 +84,12 @@ class StepManager(object):
         self._log.debug("Try to add substep to step with name {step_name} at {start}".format(step_name=step_name,
                                                                                              start=start))
         step = self.find_step(name=step_name)
-        step.add_substep(name=substep_name, action=action, duration=duration, interval=interval, attempts=attempts,
+        substep_step = step.add_substep(name=substep_name, action=action, duration=duration, interval=interval, attempts=attempts,
                          throw_except=throw_except, **kwargs)
         stop = datetime.now()
         took = stop - start
         self._log.debug("Step added took {took}".format(took=took))
+        return substep_step
 
     @staticmethod
     def createStepManager():
