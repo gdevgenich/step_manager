@@ -6,6 +6,7 @@ import logging
 from datetime import datetime
 from ._Expected import Expected
 
+
 class State(object):
     UNKNOWN = "unknown"
     PASS = "passed"
@@ -33,11 +34,13 @@ class Step(object):
         self._duration = duration
         self._expected = list()
         self.warnings = list()
+        self.alerts = list()
         self.start_time = None
         self.end_time = None
         self.start_info_provided = False
         self.throw_except = throw_except
         self._state = State.UNKNOWN
+        self.stop_time = None
 
     @property
     def name(self):
@@ -81,20 +84,30 @@ class Step(object):
     def add_substep(self, name, action=None, duration=0.0, interval=0, attempts=1, throw_except=False, **kwargs):
         if self._sm is None:
             self._sm = self._owner.createStepManager()
-        step = self._sm.add_step(name=name, action=action, duration=duration, interval=interval, attempts=attempts, throw_except=throw_except, **kwargs)
+        step = self._sm.add_step(name=name, action=action, duration=duration, interval=interval,
+                                 attempts=attempts, throw_except=throw_except, **kwargs)
         return step
 
     def add_expected(self, method, **kwargs):
+        """
+        Add expected to step
+        :param method: Method which will be called
+        :param kwargs: different kwargs which will be passed to expected as is_alert
+        :return:
+        """
         start = datetime.now()
         self.log(logging.DEBUG, "Add expected to step {name} at {start}".format(name=self.name, start=start))
         self._expected.append(Expected(owner=self, method=method, **kwargs))
         stop = datetime.now()
-        took=stop-start
+        took = stop - start
         self.log(logging.DEBUG, "Expected added took {took}".format(took=took))
         return self
 
     def register_warning(self, msg):
         self.warnings.append("{step}: {msg}".format(step=self.name, msg=msg))
+
+    def register_alert(self, msg):
+        self.alerts.append("{step}: {msg}".format(step=self.name, msg=msg))
 
     def collect_warnings(self):
         if len(self.warnings) > 0:
@@ -104,6 +117,15 @@ class Step(object):
             for msg in sm_warnings:
                 self.register_warning(msg=msg)
         return self.warnings
+
+    def collect_alerts(self):
+        if len(self.alerts) > 0:
+            return self.alerts
+        if self.sm is not None:
+            sm_alerts = self.sm.collect_alerts()
+            for msg in sm_alerts:
+                self.register_alert(msg=msg)
+        return self.alerts
 
     def run(self):
         # Step 1. Execute action in critical section
@@ -133,11 +155,14 @@ class Step(object):
                 if not res and self._left_attempts == 0:
                     self.log(logging.WARNING, "!Check of expected in step {step_name} failed with message: {message}"
                              .format(step_name=self._name, message=message))
-                    self.register_warning(message)
+                    if expected.is_alert:
+                        self.register_alert(message)
+                    else:
+                        self.register_warning(message)
                     self._state = State.WARN
                     if self.throw_except:
                         raise AssertionError("!Check of expected in step {step_name} failed with message: {message}"
-                             .format(step_name=self._name, message=message))
+                                             .format(step_name=self._name, message=message))
                 elif not res:
                     self.repeat = True
             except Exception as err:

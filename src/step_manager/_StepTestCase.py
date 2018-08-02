@@ -51,4 +51,5 @@ class StepTestCase(PBXTestCase):
        self.initialize(self.__sm__)
        self.__sm__.run(timeout=self.TIMEOUT)
 
+       self.alerts = self.__sm__.get_alerts()
        self.assertFalse(self.__sm__.has_warnings(), self.__sm__.get_warnings())
