@@ -8,8 +8,8 @@ setup(
     name="step_manager",
     author="Vitold Sedyshev, Dmitry Girdyuk",
     author_email="vit1251@gmail.com",
-    keywords="test mnager",
-    version="1.29",
+    keywords="step manager",
+    version="1.31",
     package_dir={'': 'src'},
     packages=find_packages('src'),
     zip_safe=False

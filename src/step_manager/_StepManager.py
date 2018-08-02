@@ -84,11 +84,12 @@ class StepManager(object):
         self._log.debug("Try to add substep to step with name {step_name} at {start}".format(step_name=step_name,
                                                                                              start=start))
         step = self.find_step(name=step_name)
-        step.add_substep(name=substep_name, action=action, duration=duration, interval=interval, attempts=attempts,
+        substep_step = step.add_substep(name=substep_name, action=action, duration=duration, interval=interval, attempts=attempts,
                          throw_except=throw_except, **kwargs)
         stop = datetime.now()
         took = stop - start
         self._log.debug("Step added took {took}".format(took=took))
+        return substep_step
 
     @staticmethod
     def createStepManager():
@@ -248,15 +249,21 @@ class StepManager(object):
         return self._context.get(key)
 
     def set(self, key, value):
+        if callable(value):
+            value = value()
         self._context[key] = value
 
     def add_to_dict(self, dict_name, key, value):
+        if callable(value):
+            value = value()
         if self._context.has_key(dict_name):
             self._context.get(dict_name)[key] = value
         else:
             self._context[dict_name] = dict((key,value))
 
     def add_to_list(self, list_name, value):
+        if callable(value):
+            value = value()
         if self._context.has_key(list_name):
             self._context.get(list_name).append(value)
         else:
