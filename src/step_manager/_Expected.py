@@ -5,11 +5,12 @@ import logging
 
 class Expected(object):
 
-    def __init__(self, owner, method, should_return=True, **kwargs):
+    def __init__(self, owner, method, should_return=True, is_alert=False, **kwargs):
         self.owner = owner
         self.log = owner.log
         self._method = method
         self._should_return = should_return
+        self.is_alert = is_alert
         self._kwargs = dict(**kwargs)
         self.__info_provided = False
 
@@ -21,8 +22,8 @@ class Expected(object):
 
         if not self.__info_provided:
             self.__info_provided = True
-            self.log(logging.INFO,
-                 ".Check expected '{method}' with params {params}".format(method=method_name, params=self._kwargs))
+            self.log(logging.INFO, ".Check expected '{method}' with params {params}".
+                     format(method=method_name, params=self._kwargs))
 
         res = self._method(**self._kwargs)
         if not isinstance(res, tuple):
@@ -32,5 +33,3 @@ class Expected(object):
         else:
             self.log(logging.INFO, ".Check of expected passed")
             return True, ""
-
-

@@ -24,6 +24,7 @@ class StepManager(object):
         self._completed = False
         self._exec_after = None
         self.__warnings = list()
+        self.__alerts = list()
         self._duration = 0.0
         self._context = dict()
         self._careful = careful
@@ -84,8 +85,9 @@ class StepManager(object):
         self._log.debug("Try to add substep to step with name {step_name} at {start}".format(step_name=step_name,
                                                                                              start=start))
         step = self.find_step(name=step_name)
-        substep_step = step.add_substep(name=substep_name, action=action, duration=duration, interval=interval, attempts=attempts,
-                         throw_except=throw_except, **kwargs)
+        substep_step = step.add_substep(name=substep_name, action=action, duration=duration,
+                                        interval=interval, attempts=attempts,
+                                        throw_except=throw_except, **kwargs)
         stop = datetime.now()
         took = stop - start
         self._log.debug("Step added took {took}".format(took=took))
@@ -139,6 +141,13 @@ class StepManager(object):
         else:
             return False
 
+    def has_alerts(self):
+        self.collect_alerts()
+        if len(self.__alerts) > 0:
+            return True
+        else:
+            return False
+
     def collect_warnings(self):
         if len(self.__warnings) > 0:
             return self.__warnings
@@ -148,6 +157,15 @@ class StepManager(object):
                 self.__warnings.append(warning)
         return self.__warnings
 
+    def collect_alerts(self):
+        if len(self.__alerts) > 0:
+            return self.__alerts
+        for step in self._steps:
+            step_alerts = step.collect_alerts()
+            for alert in step_alerts:
+                self.__alerts.append(alert)
+        return self.__alerts
+
     def get_warnings(self):
         self.collect_warnings()
         if not self._completed:
@@ -156,6 +174,13 @@ class StepManager(object):
         for warning in self.__warnings:
             warning_string += "\n" + warning
         return warning_string
+
+    def get_alerts(self):
+        self.collect_alerts()
+        alerts_string = ""
+        for alert in self.__alerts:
+            alerts_string += "\n" + alert
+        return alerts_string
 
     def _iteration(self, reactor):
         # If no step left then reactor should be stopped
@@ -193,8 +218,8 @@ class StepManager(object):
                 # If step has substeps then run start step manager with substeps
                 if step.sm is not None:
                     step.sm.level = self.level + 1
-                    self.log(logging.INFO, ".Substeps from step with name '{name}' started".format(name=step.name,
-                                                                                                  time="%.3f" % reactor.seconds()))
+                    self.log(logging.INFO, ".Substeps from step with name '{name}' started".
+                             format(name=step.name, time="%.3f" % reactor.seconds()))
                     step.sm.set_exec_after(self._iteration)
                     # Careful with timeout between steps
                     step.sm.set_duration(step.duration)
@@ -256,15 +281,15 @@ class StepManager(object):
     def add_to_dict(self, dict_name, key, value):
         if callable(value):
             value = value()
-        if self._context.has_key(dict_name):
+        if dict_name in self._context:
             self._context.get(dict_name)[key] = value
         else:
-            self._context[dict_name] = dict((key,value))
+            self._context[dict_name] = dict((key, value))
 
     def add_to_list(self, list_name, value):
         if callable(value):
             value = value()
-        if self._context.has_key(list_name):
+        if list_name in self._context:
             self._context.get(list_name).append(value)
         else:
             self._context[list_name] = list(value)
