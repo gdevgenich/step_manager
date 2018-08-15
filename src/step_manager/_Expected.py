@@ -26,14 +26,11 @@ class Expected(object):
                      format(method=method_name, params=self._kwargs))
 
         res = self._method(**self._kwargs)
-        msg = "No message provided"
         if not isinstance(res, tuple):
-            res = (res, msg)
-        else:
-            if not res[1]:
-                res[1] = msg
+            res = (res, '')
+        msg = res[1] if res[1] else "No message provided"
         if res[0] != self._should_return:
-            return False, res[1]
+            return False, msg
         else:
             self.log(logging.INFO, ".Check of expected passed")
             return True, ""
