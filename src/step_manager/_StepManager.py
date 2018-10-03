@@ -293,3 +293,7 @@ class StepManager(object):
             self._context.get(list_name).append(value)
         else:
             self._context[list_name] = list(value)
+
+    def call_method_of_stored_value(self, key, method_name, **kwargs):
+        link_to_method = getattr(self.get(key), method_name)
+        return link_to_method(**kwargs)
