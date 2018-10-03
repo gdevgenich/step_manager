@@ -80,6 +80,9 @@ class Step(object):
 
     def get_stop_time(self):
         return self.stop_time
+    
+    def set_duration(self, duration):
+        self._duration = duration
 
     def add_substep(self, name, action=None, duration=0.0, interval=0, attempts=1, throw_except=False, **kwargs):
         if self._sm is None:
