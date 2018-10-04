@@ -9,7 +9,7 @@ setup(
     author="Vitold Sedyshev, Dmitry Girdyuk",
     author_email="vit1251@gmail.com",
     keywords="step manager",
-    version="2.2",
+    version="2.3",
     package_dir={'': 'src'},
     packages=find_packages('src'),
     zip_safe=False
