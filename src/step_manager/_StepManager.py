@@ -110,6 +110,13 @@ class StepManager(object):
 
     def remove_step(self, step_name):
         self._steps.remove(self.find_step(step_name))
+    
+    def remove_step_from_bottom(self, step_name):
+        idx = self.find_last_step_index(name=step_name)
+        if idx == -1:
+            raise Exception("No step with name {name} found".format(name=step_name))
+        else:
+            self._steps.pop(idx)
 
     def add_step_after(self, after_step, name, action=None, duration=0.0, **kwargs):
         start = datetime.now()
