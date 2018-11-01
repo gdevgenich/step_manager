@@ -68,6 +68,12 @@ class StepManager(object):
             if step.name == name:
                 return step
         raise Exception("No step with name {name} found".format(name=name))
+    
+    def rfind_step(self, name):
+        for step in reversed(self._steps):
+            if step.name == name:
+                return step
+        raise Exception("No step with name {name} found".format(name=name))
 
     def find_steps(self, name):
         steps = list()
