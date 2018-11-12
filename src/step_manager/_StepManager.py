@@ -68,6 +68,12 @@ class StepManager(object):
             if step.name == name:
                 return step
         raise Exception("No step with name {name} found".format(name=name))
+    
+    def rfind_step(self, name):
+        for step in reversed(self._steps):
+            if step.name == name:
+                return step
+        raise Exception("No step with name {name} found".format(name=name))
 
     def find_steps(self, name):
         steps = list()
@@ -110,6 +116,9 @@ class StepManager(object):
 
     def remove_step(self, step_name):
         self._steps.remove(self.find_step(step_name))
+    
+    def remove_step_from_bottom(self, step_name):
+        self._steps.remove(self.rfind_step(step_name))
 
     def add_step_after(self, after_step, name, action=None, duration=0.0, **kwargs):
         start = datetime.now()
