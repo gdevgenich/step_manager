@@ -17,7 +17,7 @@ class StepManager(object):
     @ivar bool careful: Determine careful duration calculation (without except action run)
     """
 
-    def __init__(self, careful=False):
+    def __init__(self, careful=False, unfinished_except=True):
         self._log = logging.getLogger("step_manager")
         self._steps = list()
         self._backlog = list()
@@ -28,6 +28,7 @@ class StepManager(object):
         self._duration = 0.0
         self._context = dict()
         self._careful = careful
+        self._unfinished_except = unfinished_except
         self.level = 0
 
     @property
@@ -138,6 +139,12 @@ class StepManager(object):
         react = Reactor()
         react.call_later(0.0, self.start)
         react.run(timeout)
+        if not self._completed:
+            if self._unfinished_except:
+                raise Exception("StepManager finished because of timeout")
+            else:
+                self.collect_warnings()
+                self.__warnings.append("StepManager finished because of timeout")
 
     def start(self, reactor):
         self._backlog = list(self._steps)
