@@ -36,7 +36,6 @@ class Step(object):
         self.warnings = list()
         self.alerts = list()
         self.start_time = None
-        self.end_time = None
         self.start_info_provided = False
         self.throw_except = throw_except
         self._state = State.UNKNOWN
