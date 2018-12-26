@@ -150,6 +150,18 @@ class StepManager(object):
         self._backlog = list(self._steps)
         reactor.call_later(0.0, self._iteration)
 
+    def continue_execution(self, timeout=180):
+        react = Reactor()
+        react.call_later(0.0, self._continue_exection)
+        react.run(timeout)
+
+    def _continue_exection(self, reactor):
+        self._backlog = list()
+        for step in self._steps:
+            if not step.start_info_provided:
+                self._backlog.append(step)
+        reactor.call_later(0.0, self._iteration)
+
     def has_warnings(self):
         self.collect_warnings()
         if len(self.__warnings) > 0:
