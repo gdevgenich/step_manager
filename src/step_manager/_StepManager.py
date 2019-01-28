@@ -154,6 +154,11 @@ class StepManager(object):
         react = Reactor()
         react.call_later(0.0, self._continue_exection)
         react.run(timeout)
+    
+    def update_backlog(self):
+        for step in self._steps:
+            if not step.start_info_provided:
+                self._backlog.append(step)
 
     def _continue_exection(self, reactor):
         self._backlog = list()
