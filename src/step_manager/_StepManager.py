@@ -143,7 +143,7 @@ class StepManager(object):
         if before_step_index == -1:
             raise ValueError("No step with name {before_step} registered in step manager".format(before_step=before_step))
         step = Step(self, name, action, duration, **kwargs)
-        self._steps.insert(before_step_index - 1, step)
+        self._steps.insert(before_step_index, step)
         stop = datetime.now()
         took = stop - start
         self._log.debug("Step added took {took}".format(took=took))
