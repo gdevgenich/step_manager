@@ -134,6 +134,20 @@ class StepManager(object):
         took = stop - start
         self._log.debug("Step added took {took}".format(took=took))
         return step
+    
+    def add_step_before(self, before_step, name, action=None, duration=0.0, **kwargs):
+        start = datetime.now()
+        self._log.debug("Try to add step with name {step_name} before step {before_step} at {start}".
+                        format(step_name=name, before_step=before_step, start=start))
+        before_step_index = self.find_last_step_index(before_step)
+        if before_step_index == -1:
+            raise ValueError("No step with name {before_step} registered in step manager".format(before_step=before_step))
+        step = Step(self, name, action, duration, **kwargs)
+        self._steps.insert(before_step_index - 1, step)
+        stop = datetime.now()
+        took = stop - start
+        self._log.debug("Step added took {took}".format(took=took))
+        return step
 
     def run(self, timeout=180):
         react = Reactor()
