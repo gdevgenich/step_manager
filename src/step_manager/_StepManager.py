@@ -247,7 +247,7 @@ class StepManager(object):
                 step.run()
             except Exception as err:
                 self.log(logging.ERROR,
-                         "{name} :: step execution failed, reason: {err}".format(name=step.name, err=err.message))
+                         "{name} :: step execution failed, reason: {err!r}".format(name=step.name, err=err))
                 raise
             else:
                 if not step.repeat:
