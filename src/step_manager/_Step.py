@@ -145,7 +145,7 @@ class Step(object):
             self._state = State.PASS
         except Exception as err:
             self._state = State.FAIL
-            self.log(logging.ERROR, "!Action failed with exception: {err}".format(err=err.message))
+            self.log(logging.ERROR, "!Action failed with exception: {err!r}".format(err=err))
             raise
 
         # Step 2. Collect expected messages
