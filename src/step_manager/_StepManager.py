@@ -318,7 +318,11 @@ class StepManager(object):
                 s.sm.dump(level=level + 1, base_order=order, stream=stream)
 
     def get(self, key):
-        return self._context.get(key)
+        res = self._context.get(key)
+        if res is None:
+            raise ValueError("No key {key} was stored".format(key=key))
+        else:
+            return res
 
     def set(self, key, value):
         if callable(value):
