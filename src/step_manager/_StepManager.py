@@ -319,10 +319,10 @@ class StepManager(object):
 
     def get(self, key):
         res = self._context.get(key)
-        if res is None:
-            raise ValueError("No key {key} was stored".format(key=key))
-        else:
-            return res
+        # if res is None:
+        #     raise ValueError("No key {key} was stored".format(key=key))
+        # else:
+        return res
 
     def set(self, key, value):
         if callable(value):
