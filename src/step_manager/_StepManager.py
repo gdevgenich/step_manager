@@ -117,9 +117,21 @@ class StepManager(object):
 
     def remove_step(self, step_name):
         self._steps.remove(self.find_step(step_name))
-    
+
     def remove_step_from_bottom(self, step_name):
         self._steps.remove(self.rfind_step(step_name))
+
+    def remove_steps_between(self, start_step, stop_step):
+        remove = False
+        for step in reversed(self._steps):
+            if step.name == stop_step:
+                remove = True
+                self._steps.remove(step)
+            elif step.name == start_step:
+                self._steps.remove(step)
+                break
+            elif remove:
+                self._steps.remove(step)
 
     def add_step_after(self, after_step, name, action=None, duration=0.0, **kwargs):
         start = datetime.now()
