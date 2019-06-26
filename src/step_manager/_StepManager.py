@@ -336,9 +336,9 @@ class StepManager(object):
         # else:
         return res
 
-    def set(self, key, value):
+    def set(self, key, value, **kwargs):
         if callable(value):
-            value = value()
+            value = value(**kwargs)
         self._context[key] = value
 
     def add_to_dict(self, dict_name, key, value):
