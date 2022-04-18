@@ -360,3 +360,12 @@ class StepManager(object):
     def call_method_of_stored_value(self, key, method_name, **kwargs):
         link_to_method = getattr(self.get(key), method_name)
         return link_to_method(**kwargs)
+
+    @staticmethod
+    def store(cls_inst, attribute_name, store, **kwargs):
+        """
+        Make easy to assign and work with values appeared during test execution
+        """
+        if callable(store):
+            store = store(**kwargs)
+        setattr(cls_inst, attribute_name, store)
