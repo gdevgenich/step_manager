@@ -18,6 +18,11 @@ class StepTestCase(PBXTestCase):
     CAREFUL = False
     TIMEOUT = 180
 
+    def assert_true_tuple(self, res_and_message):
+        res = res_and_message[0]
+        message = res_and_message[1]
+        if not res:
+            raise AssertionError(message)
 
     def prepareReport(self, sm):
         stream = StringIO()
