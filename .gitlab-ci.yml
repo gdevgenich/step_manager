@@ -7,7 +7,7 @@ stages:
 
 variables:
   DISTR: buster
-  DEB_OS_PREFIX: deb10
+  DEB_OS_PREFIX: deb11
   APT_LOCAL_REPO: imedia-hpbx-testing-${DISTR}
   APT_REPO: imedia-hpbx-testing
   APT_DIR: imedia-hpbx-testing-${DISTR}
@@ -59,28 +59,10 @@ variables:
   only:
     - tags
 
-
-linter-deb10:pylint:
-  stage: pylint
-  image: python:3.7-stretch
-  extends: .linter-default:pylint
-
 linter-deb11:pylint:
   stage: pylint
   image: python:3.9.2-bullseye
   extends: .linter-default:pylint
-
-create deb-deb10:package:
-  image: debian:10
-  script:
-    - gem install --no-ri --no-rdoc fpm -v 1.11.0
-    - >
-      fpm  -s python
-      --python-bin=${PYTHON_BIN}
-      --python-pip=${PYTHON_PIP}
-      --python-package-name-prefix=${PYTHON_BIN}
-      -t deb  setup.py
-  extends: .create deb-default:package
 
 create deb-deb11:package:
   image: debian:11
@@ -96,18 +78,6 @@ create deb-deb11:package:
       --name=python3.9-${CI_PROJECT_NAME/_/-}
       -t deb  setup.py
   extends: .create deb-default:package
-
-apt repo-deb10:debrepo:
-  variables:
-    DEB_OS_PREFIX: deb10
-    DISTR: buster
-    APT_LOCAL_REPO: imedia-hpbx-testing-${DISTR}
-    APT_DIR: imedia-hpbx-testing-${DISTR}
-  extends: .apt repo-default:debrepo
-  dependencies:
-    - create deb-deb10:package
-  needs:
-    - create deb-deb10:package
 
 apt repo-deb11:debrepo:
   variables:
