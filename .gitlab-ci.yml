@@ -8,18 +8,17 @@ stages:
 variables:
   DISTR: buster
   DEB_OS_PREFIX: deb11
-  APT_LOCAL_REPO: imedia-hpbx-testing-buster
+  APT_LOCAL_REPO: imedia-hpbx-testing-${DISTR}
   APT_REPO: imedia-hpbx-testing
-  APT_DIR: imedia-hpbx-testing-buster
+  APT_DIR: imedia-hpbx-testing-${DISTR}
   PYTHON_BIN: python3
   PYTHON_PIP: pip3
   EMAIL: hpbxqateam@intermedia.net
   REQUIREMENTS: requirements.txt
 
 
-linter:pylint:
+.linter-default:pylint:
   stage: pylint
-  image: python:3.7-stretch
   tags: [python]
   allow_failure: true
   script:
@@ -27,46 +26,67 @@ linter:pylint:
     - ${PYTHON_BIN} -m pip install flake8
     - ${PYTHON_BIN} -m flake8  --max-line-length 120 src/
 
-
-create deb:package:
+.create deb-default:package:
   stage: package
   tags: [python]
-  script:
+  before_script:
     - apt-get update 
     - apt-get install python3 python3-pip ruby ruby-dev rubygems build-essential -y
-    - gem install --no-ri --no-rdoc fpm
+  artifacts:
+    expire_in: 1 days
+    paths:
+      - "*deb"
+
+.apt repo-default:debrepo:
+  stage: debrepo
+  tags: [python]
+  script:
+    - apt-get update
+    - apt-get install -y curl
+    - > 
+      ls *.deb | while read l; do
+      curl -X POST -F file=@"${l}"
+      --user ${APTUSER}:${APTPASS} ${APTURL}/files/${APT_DIR};
+      done
+    - > 
+      curl -X POST --user ${APTUSER}:${APTPASS}
+      ${APTURL}/repos/${APT_LOCAL_REPO}/file/${APT_DIR}
+    - > 
+      curl -X PUT -H 'Content-Type:application/json'
+      --data '{"Sources":[{"Component":"non-free"}],
+      "Architectures":["amd64"], "Distribution":"${DISTR}"}'
+      --user ${APTUSER}:${APTPASS} ${APTURL}/publish/${APT_REPO}/${DISTR}
+  only:
+    - tags
+
+linter-deb11:pylint:
+  stage: pylint
+  image: python:3.9.2-bullseye
+  extends: .linter-default:pylint
+
+create deb-deb11:package:
+  image: debian:11
+  script:
+    - gem install --no-document fpm -v 1.14.0
     - >
       fpm  -s python
       --python-bin=${PYTHON_BIN}
       --python-pip=${PYTHON_PIP}
       --python-package-name-prefix=${PYTHON_BIN}
+      --replaces=${PYTHON_BIN}-${CI_PROJECT_NAME/_/-}
+      --conflicts=${PYTHON_BIN}-${CI_PROJECT_NAME/_/-}
+      --name=python3.9-${CI_PROJECT_NAME/_/-}
       -t deb  setup.py
-  artifacts:
-    expire_in: 1 days
-    paths:
-      - "*deb"
-  
+  extends: .create deb-default:package
 
-apt repo:debrepo:
-  stage: debrepo
-  tags: [python]
+apt repo-deb11:debrepo:
+  variables:
+    DEB_OS_PREFIX: deb11
+    DISTR: bullseye
+    APT_LOCAL_REPO: imedia-hpbx-testing-${DISTR}
+    APT_DIR: imedia-hpbx-testing-${DISTR}
+  extends: .apt repo-default:debrepo
   dependencies:
-    - create deb:package
-  script:
-    - apt-get update
-    - apt-get install -y curl
-    - > 
-      ls|grep "\.deb" | while read l; do
-      curl -X POST -F file=@"${l}"  
-      --user ${APTUSER}:${APTPASS} ${APTURL}/files/${APT_DIR};
-      done
-    - > 
-      curl -X POST --user ${APTUSER}:${APTPASS} 
-      ${APTURL}/repos/${APT_LOCAL_REPO}/file/${APT_DIR}
-    - > 
-      curl -X PUT -H 'Content-Type:application/json'  
-      --data '{"Sources":[{"Component":"non-free"}], 
-      "Architectures":["amd64"], "Distribution":"${DISTR}"}' 
-      --user ${APTUSER}:${APTPASS} ${APTURL}/publish/${APT_REPO}/${DISTR}
-  only:
-    - tags
+    - create deb-deb11:package
+  needs:
+    - create deb-deb11:package
