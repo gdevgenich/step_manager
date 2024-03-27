@@ -1,4 +1,4 @@
-image: debian:10
+image: debian:11
 
 stages:
   - pylint
@@ -7,7 +7,7 @@ stages:
 
 variables:
   DISTR: buster
-  DEB_OS_PREFIX: deb10
+  DEB_OS_PREFIX: deb11
   APT_LOCAL_REPO: imedia-hpbx-testing-buster
   APT_REPO: imedia-hpbx-testing
   APT_DIR: imedia-hpbx-testing-buster
